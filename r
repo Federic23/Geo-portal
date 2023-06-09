@@ -1,5 +1,4 @@
-############ Nueva version
-input_file <- "/Users/paulaareco/Desktop/ORT/tesis/logsejemplo.txt"
+input_file <- "/Users/paulaareco/Desktop/ORT/tesis/Geo-portal/logsejemplo.txt"
 
 #leo las lineas del archivo
 input_data <- readLines(input_file) 
@@ -33,18 +32,37 @@ for (line in input_data) {
      }
 }
 
-#una vez que tengo el archivo ordenado, puedo hacer cosas con las lineas de cada ip
+#funcion encargada de ordenarlos por hora
+hora_log <- function(line) {
+  hour_regex <- "\\[(\\d{2}/\\w+/(\\d{4}|\\d{2}):(\\d{2}:\\d{2}:\\d{2}) -\\d{4})\\]"
+  matches <- regmatches(line, regexpr(hour_regex, line))
+  if (length(matches) > 0) {
+    hour <- gsub("\\[|\\]", "", matches[1])
+    return(hour)
+  } else {
+    return(NULL)
+  }
+}
+
+ip_logs_sorted_by_hour <- list()
 for (ip in names(ip_logs)) {
+  logs <- ip_logs[[ip]]
+  sorted_logs <- logs[order(sapply(logs, hora_log))]
+  ip_logs_sorted_by_hour[[ip]] <- sorted_logs
+}
+
+
+#una vez que tengo el archivo ordenado, puedo hacer cosas con las lineas de cada ip
+for (ip in names(ip_logs_sorted_by_hour)) {
 
 
 }
 
 
-#si quiero imprimit para cer que hizo
-for (ip in names(ip_logs)) {
+for (ip in names(ip_logs_sorted_by_hour)) {
   cat("IP:", ip, "\n")
-  cat("Entradas de log:\n")
-  for (line in ip_logs[[ip]]) {
+  cat("Entradas de log ordenadas por hora:\n")
+  for (line in ip_logs_sorted_by_hour[[ip]]) {
     cat(line, "\n")
   }
   cat("\n")
