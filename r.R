@@ -84,6 +84,11 @@ if (!require(ApacheLogProcessor)) {
   install.packages("ApacheLogProcessor")
 }
 
+if (!require(dplyr)) {
+  install.packages("dplyr")
+}
+
+
 library(ApacheLogProcessor)
 ###### path <- "//Users/paulaareco/Desktop/ORT/tesis/Geo-portal/Logs/access.log.9"
 path <- "C:/Users/Usuario/Desktop/Geo-portal-procesamiento-en-r/Geo-portal-procesamiento-en-r/Logs/access.log.8"
@@ -96,8 +101,8 @@ str(log_data)
 write.csv(log_data, "C:/Users/Usuario/Desktop/Geo-portal-procesamiento-en-r/Geo-portal-procesamiento-en-r/Logs/outputPlano.csv", row.names = FALSE)
 
 
-#df5 = read.apache.access.log(path, columns=c("ip", "url", "datetime"))
-#str(df5)
+df5 = read.apache.access.log(path, columns=c("ip", "url", "datetime"))
+str(df5)
 
 write.csv(df5, "C:/Users/Usuario/Desktop/Geo-portal-procesamiento-en-r/Geo-portal-procesamiento-en-r/Logs/output.csv", row.names = FALSE)
 
@@ -136,16 +141,27 @@ write.csv(log_data_ordered, "C:/Users/Usuario/Desktop/Geo-portal-procesamiento-e
 # Filter out crawlers based on user_agent
 log_data <- log_data[!grepl("bot|crawler", log_data$useragent, ignore.case = TRUE), ]
 
-# Identify unique agents using distinct
-unique_agents <- distinct(log_data, useragent)
+# Create a new column for unique identifier (IP + agent)
+log_data$unique_id <- paste(log_data$ip, log_data$useragent, sep = "_")
 
-# Print the unique agents
-print(unique_agents$useragent)
+# Print the updated log_data with the unique identifier
+print(log_data)
+
+# Write the updated log_data to a CSV file
+write.csv(log_data, "C:/Users/Usuario/Desktop/Geo-portal-procesamiento-en-r/Geo-portal-procesamiento-en-r/Logs/output_with_identifier.csv", row.names = FALSE)
+
+unique_ids <- unique(log_data$unique_id)
+
+# Print the list of unique identifiers
+print(unique_ids)
 
 #### Identificar Sesiones
 
+# Subset log_data to include referrals different from "-"
+referrals <- log_data$referer[log_data$referer != "-"]
 
-
+# Print the referrals
+print(referrals)
 
 
 
