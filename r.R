@@ -65,3 +65,90 @@ for (ip in names(ip_logs)) {
   }
   cat("\n")
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if (!require(ApacheLogProcessor)) {
+  install.packages("ApacheLogProcessor")
+}
+
+library(ApacheLogProcessor)
+###### path <- "//Users/paulaareco/Desktop/ORT/tesis/Geo-portal/Logs/access.log.9"
+path <- "C:/Users/Usuario/Desktop/Geo-portal-procesamiento-en-r/Geo-portal-procesamiento-en-r/Logs/access.log.8"
+
+log_data <- read.apache.access.log(path,num_cores=2)
+
+#imprime log data
+str(log_data)
+
+write.csv(log_data, "C:/Users/Usuario/Desktop/Geo-portal-procesamiento-en-r/Geo-portal-procesamiento-en-r/Logs/outputPlano.csv", row.names = FALSE)
+
+
+#df5 = read.apache.access.log(path, columns=c("ip", "url", "datetime"))
+#str(df5)
+
+write.csv(df5, "C:/Users/Usuario/Desktop/Geo-portal-procesamiento-en-r/Geo-portal-procesamiento-en-r/Logs/output.csv", row.names = FALSE)
+
+# Filter out crawlers based on user_agent
+log_data <- log_data[!grepl("bot|crawler", log_data$useragent, ignore.case = TRUE), ]
+
+# Print log data
+str(log_data)
+
+# Write log data to a CSV file
+write.csv(log_data, "C:/Users/Usuario/Desktop/Geo-portal-procesamiento-en-r/Geo-portal-procesamiento-en-r/Logs/outputPlano.csv", row.names = FALSE)
+
+
+
+#### Crawlers
+
+# Filter out crawlers based on user_agent --- HAY QUE VER QUE PALABRAS CLAVES HAY , EL STRING DE ESTHER
+log_data <- log_data[!grepl("bot|crawler|spider", log_data$useragent, ignore.case = TRUE), ]
+
+# Print log data
+str(log_data)
+
+# Write log data to a CSV file
+write.csv(log_data, "C:/Users/Usuario/Desktop/Geo-portal-procesamiento-en-r/Geo-portal-procesamiento-en-r/Logs/outputPlano.csv", row.names = FALSE)
+
+#### Juntar/Ordenar por ip - Ord Fecha
+
+log_data_ordered <- log_data[order(log_data$ip, log_data$datetime), ]
+
+str(log_data_ordered)
+
+write.csv(log_data_ordered, "C:/Users/Usuario/Desktop/Geo-portal-procesamiento-en-r/Geo-portal-procesamiento-en-r/Logs/ordered_output.csv", row.names = FALSE)
+
+#### Identificar Agentes
+
+# Filter out crawlers based on user_agent
+log_data <- log_data[!grepl("bot|crawler", log_data$useragent, ignore.case = TRUE), ]
+
+# Identify unique agents using distinct
+unique_agents <- distinct(log_data, useragent)
+
+# Print the unique agents
+print(unique_agents$useragent)
+
+#### Identificar Sesiones
+
+
+
+
+
+
+
+
+
