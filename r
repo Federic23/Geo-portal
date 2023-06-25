@@ -1,3 +1,7 @@
+#install.packages("ApacheLogProcessor")
+library(ApacheLogProcessor)
+
+
 input_file <- "/Users/paulaareco/Desktop/ORT/tesis/Geo-portal/logsejemplo.txt"
 
 #leo las lineas del archivo
@@ -67,3 +71,21 @@ for (ip in names(ip_logs_sorted_by_hour)) {
   }
   cat("\n")
 }
+
+
+###############################################################################################################################
+
+library(ApacheLogProcessor)
+path <- "//Users/paulaareco/Desktop/ORT/tesis/Geo-portal/Logs/access.log.9"
+log_data <- read.apache.access.log(path,num_cores=2)
+
+#imprime log data
+str(log_data)
+
+df5 = read.apache.access.log(path, columns=c("ip", "url", "datetime"))
+str(df5)
+
+
+
+
+
