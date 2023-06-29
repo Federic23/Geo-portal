@@ -80,6 +80,9 @@ for (ip in names(ip_logs)) {
 
 
 
+
+
+
 if (!require(ApacheLogProcessor)) {
   install.packages("ApacheLogProcessor")
 }
@@ -90,21 +93,21 @@ if (!require(dplyr)) {
 
 
 library(ApacheLogProcessor)
-###### path <- "//Users/paulaareco/Desktop/ORT/tesis/Geo-portal/Logs/access.log.9"
-path <- "C:/Users/Usuario/Desktop/Geo-portal-procesamiento-en-r/Geo-portal-procesamiento-en-r/Logs/access.log.8"
+path <- "//Users/paulaareco/Desktop/ORT/tesis/Geo-portal/Logs/access.log.9"
+##path <- "C:/Users/Usuario/Desktop/Geo-portal-procesamiento-en-r/Geo-portal-procesamiento-en-r/Logs/access.log.8"
 
 log_data <- read.apache.access.log(path,num_cores=2)
 
 #imprime log data
 str(log_data)
 
-write.csv(log_data, "C:/Users/Usuario/Desktop/Geo-portal-procesamiento-en-r/Geo-portal-procesamiento-en-r/Logs/outputPlano.csv", row.names = FALSE)
+write.csv(log_data, "/Users/paulaareco/Desktop/ORT/tesis/archivosPrueba/outputPlano.csv", row.names = FALSE)
 
 
 df5 = read.apache.access.log(path, columns=c("ip", "url", "datetime"))
 str(df5)
 
-write.csv(df5, "C:/Users/Usuario/Desktop/Geo-portal-procesamiento-en-r/Geo-portal-procesamiento-en-r/Logs/output.csv", row.names = FALSE)
+write.csv(df5, "/Users/paulaareco/Desktop/ORT/tesis/archivosPrueba/output.csv", row.names = FALSE)
 
 # Filter out crawlers based on user_agent
 log_data <- log_data[!grepl("bot|crawler", log_data$useragent, ignore.case = TRUE), ]
@@ -113,20 +116,25 @@ log_data <- log_data[!grepl("bot|crawler", log_data$useragent, ignore.case = TRU
 str(log_data)
 
 # Write log data to a CSV file
-write.csv(log_data, "C:/Users/Usuario/Desktop/Geo-portal-procesamiento-en-r/Geo-portal-procesamiento-en-r/Logs/outputPlano.csv", row.names = FALSE)
+write.csv(log_data, "/Users/paulaareco/Desktop/ORT/tesis/archivosPrueba/outputPlano.csv", row.names = FALSE)
 
 
 
 #### Crawlers
 
-# Filter out crawlers based on user_agent --- HAY QUE VER QUE PALABRAS CLAVES HAY , EL STRING DE ESTHER
-log_data <- log_data[!grepl("bot|crawler|spider", log_data$useragent, ignore.case = TRUE), ]
+#log_data <- log_data[!grepl("bot|crawler", log_data$useragent, ignore.case = TRUE), ]
+pattern <- readLines("/Users/paulaareco/Desktop/ORT/tesis/Geo-portal/pattern.txt")
+pattern <- paste(pattern, collapse = "|")
+log_data <- log_data[!grepl(pattern, log_data$useragent, ignore.case = TRUE), ]
 
 # Print log data
 str(log_data)
 
 # Write log data to a CSV file
-write.csv(log_data, "C:/Users/Usuario/Desktop/Geo-portal-procesamiento-en-r/Geo-portal-procesamiento-en-r/Logs/outputPlano.csv", row.names = FALSE)
+#write.csv(log_data, "C:/Users/Usuario/Desktop/Geo-portal-procesamiento-en-r/Geo-portal-procesamiento-en-r/Logs/outputPlano.csv", row.names = FALSE)
+
+write.csv(log_data, "/Users/paulaareco/Desktop/ORT/tesis/archivosPrueba/outputPlano.csv", row.names = FALSE)
+
 
 #### Juntar/Ordenar por ip - Ord Fecha
 
@@ -134,12 +142,18 @@ log_data_ordered <- log_data[order(log_data$ip, log_data$datetime), ]
 
 str(log_data_ordered)
 
-write.csv(log_data_ordered, "C:/Users/Usuario/Desktop/Geo-portal-procesamiento-en-r/Geo-portal-procesamiento-en-r/Logs/ordered_output.csv", row.names = FALSE)
+##write.csv(log_data_ordered, "C:/Users/Usuario/Desktop/Geo-portal-procesamiento-en-r/Geo-portal-procesamiento-en-r/Logs/ordered_output.csv", row.names = FALSE)
+write.csv(log_data_ordered, "/Users/paulaareco/Desktop/ORT/tesis/archivosPrueba/ordered_output.csv", row.names = FALSE)
+
 
 #### Identificar Agentes
 
 # Filter out crawlers based on user_agent
-log_data <- log_data[!grepl("bot|crawler", log_data$useragent, ignore.case = TRUE), ]
+#log_data <- log_data[!grepl("bot|crawler", log_data$useragent, ignore.case = TRUE), ]
+pattern <- readLines("/Users/paulaareco/Desktop/ORT/tesis/Geo-portal/pattern.txt")
+pattern <- paste(pattern, collapse = "|")
+log_data <- log_data[!grepl(pattern, log_data$useragent, ignore.case = TRUE), ]
+
 
 # Create a new column for unique identifier (IP + agent)
 log_data$unique_id <- paste(log_data$ip, log_data$useragent, sep = "_")
@@ -148,20 +162,22 @@ log_data$unique_id <- paste(log_data$ip, log_data$useragent, sep = "_")
 print(log_data)
 
 # Write the updated log_data to a CSV file
-write.csv(log_data, "C:/Users/Usuario/Desktop/Geo-portal-procesamiento-en-r/Geo-portal-procesamiento-en-r/Logs/output_with_identifier.csv", row.names = FALSE)
+#write.csv(log_data, "C:/Users/Usuario/Desktop/Geo-portal-procesamiento-en-r/Geo-portal-procesamiento-en-r/Logs/output_with_identifier.csv", row.names = FALSE)
+write.csv(log_data, "/Users/paulaareco/Desktop/ORT/tesis/archivosPrueba/output_with_identifier.csv", row.names = FALSE)
 
-unique_ids <- unique(log_data$unique_id)
+
+#unique_ids <- unique(log_data$unique_id)
 
 # Print the list of unique identifiers
-print(unique_ids)
+#print(unique_ids)
 
 #### Identificar Sesiones
 
 # Subset log_data to include referrals different from "-"
-referrals <- log_data$referer[log_data$referer != "-"]
+#referrals <- log_data$referer[log_data$referer != "-"]
 
 # Print the referrals
-print(referrals)
+#print(referrals)
 
 
 
