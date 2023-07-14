@@ -1,4 +1,46 @@
 ############ Nueva version
+
+
+# Load Packages --------------------------------------------------------
+
+if (!require(jsonlite)) {
+  install.packages("jsonlite")
+}
+
+if (!require(ApacheLogProcessor)) {
+  install.packages("ApacheLogProcessor")
+}
+
+if (!require(dplyr)) {
+  install.packages("dplyr")
+}
+
+library(jsonlite)
+library(ApacheLogProcessor)
+library(dplyr)
+
+# Load Config ------------------------------------------------------
+
+## Config File
+
+json_path <- file.path("Geo-portal", "config.json")
+json_content <- readLines(json_path, warn = FALSE)
+config <- fromJSON(paste(json_content, collapse = ""))
+
+logPath <- config$logPath
+crawlersPath <- config$crawlersPath
+
+log_data <- read.apache.access.log(logPath,num_cores=2)
+
+## Crawlers file
+
+CrawlersPattern_path <- file.path("Geo-portal", "pattern.txt")
+CrawlersPattern <- readLines(CrawlersPattern_path)
+Crawlerspattern <- paste(CrawlersPattern, collapse = "|")
+log_data <- log_data[!grepl(Crawlerspattern, log_data$useragent, ignore.case = TRUE), ]
+
+# Load data --------------------------------------------------------
+
 input_file <- "/Users/Usuario/Documents/Geo-portal/logsejemplo.txt"
 
 #leo las lineas del archivo
@@ -9,6 +51,8 @@ ip_logs <- list()
 
 #regex para encontrar las ip en cada linea (formato ipv4)
 ip_pattern <- "\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}" 
+
+# Transform log ----------------------------------------------------
 
 #recorro por cada linea
 for (line in input_data) { 
@@ -33,82 +77,13 @@ for (line in input_data) {
      }
 }
 
-#una vez que tengo el archivo ordenado, puedo hacer cosas con las lineas de cada ip
-for (ip in names(ip_logs)) {
-
-
-}
-
-crawler_ips <- c()
-for (ip in names(ip_logs)) {
-  user_agents <- unique(sapply(ip_logs[[ip]], function(line) {
-    regmatches(line, regexpr("\"([^\"]+)\"", line))[[1]]
-  }))
-  
-  # Check if any user agent or pattern suggests a crawler
-  if (any(grepl("bot", user_agents, ignore.case = TRUE)) ||
-      any(grepl("spider", user_agents, ignore.case = TRUE)) ||
-      any(grepl("crawl", user_agents, ignore.case = TRUE)) ||
-      any(grepl("wget", user_agents, ignore.case = TRUE))) {
-    crawler_ips <- c(crawler_ips, ip)  # Add the IP address to the list of crawler IPs
-  }
-}
-
-
-
-#si quiero imprimit para cer que hizo
-for (ip in names(ip_logs)) {
-  cat("IP:", ip, "\n")
-  cat("Entradas de log:\n")
-  for (line in ip_logs[[ip]]) {
-    cat(line, "\n")
-  }
-  cat("\n")
-}
-
-
-
-
-
-############
-
-if (!require(jsonlite)) {
-  install.packages("jsonlite")
-}
-
-if (!require(ApacheLogProcessor)) {
-  install.packages("ApacheLogProcessor")
-}
-
-if (!require(dplyr)) {
-  install.packages("dplyr")
-}
-
-library(jsonlite)
-library(ApacheLogProcessor)
-
-############
-
-json_path <- file.path("Geo-portal", "config.json")
-json_content <- readLines(json_path, warn = FALSE)
-config <- fromJSON(paste(json_content, collapse = ""))
-
-logPath <- config$logPath
-crawlersPath <- config$crawlersPath
-
-print(logPath)
-print(crawlersPath)
-
-log_data <- read.apache.access.log(logPath,num_cores=2)
+# Proccess data -------------------------------------------------------------
 
 #### imprime log data #####
-
-str(log_data)
 
 output_path <- file.path("Geo-portal", "TestCases", "outputPlano.csv") 
 
 write.csv(log_data, output_path, row.names = FALSE)
-
 
 df5 = read.apache.access.log(logPath, columns=c("ip", "url", "datetime"))
 str(df5)
@@ -116,21 +91,13 @@ str(df5)
 output_path <- file.path("Geo-portal", "TestCases", "outputPlano.csv") 
 write.csv(df5, output_path, row.names = FALSE)
 
-#### Crawlers #####
+## Filter Crawlers accounts 
 
-CrawlersPattern_path <- file.path("Geo-portal", "pattern.txt")
-CrawlersPattern <- readLines(CrawlersPattern_path)
-Crawlerspattern <- paste(CrawlersPattern, collapse = "|")
-log_data <- log_data[!grepl(Crawlerspattern, log_data$useragent, ignore.case = TRUE), ]
-
-# Print log data
-str(log_data)
-
-# Write log data to a CSV file
+### Write log data to a CSV file
 output_path <- file.path("Geo-portal", "TestCases", "outputPlano.csv")
 write.csv(log_data, output_path, row.names = FALSE)
 
-#### Juntar/Ordenar por ip - Ord Fecha #####
+## Group by IP and order by data
 
 log_data_ordered <- log_data[order(log_data$ip, log_data$datetime), ]
 
@@ -139,8 +106,7 @@ str(log_data_ordered)
 output_path <- file.path("Geo-portal", "TestCases", "ordered_output.csv")
 write.csv(log_data_ordered, output_path , row.names = FALSE)
 
-
-#### Identificar Agentes #####
+## Identify Agents
 
 CrawlersPattern_path <- file.path("Geo-portal", "pattern.txt")
 CrawlersPattern <- readLines(CrawlersPattern_path)
@@ -148,11 +114,11 @@ Crawlerspattern <- paste(CrawlersPattern, collapse = "|")
 log_data <- log_data[!grepl(Crawlerspattern, log_data$useragent, ignore.case = TRUE), ]
 
 
-# Create a new column for unique identifier (IP + agent)
+### Create a new column for unique identifier (IP + agent)
 log_data$unique_id <- paste(log_data$ip, log_data$useragent, sep = "_")
 
 
-# Identify sessions based on time difference
+### Identify sessions based on time difference
 log_data$datetime <- as.POSIXct(log_data$datetime, format = "%d/%b/%Y:%H:%M:%S", tz = "UTC")
 log_data <- log_data %>%
   group_by(unique_id) %>%
@@ -160,52 +126,15 @@ log_data <- log_data %>%
          session = cumsum(ifelse(is.na(time_diff) | time_diff > 15, 1, 0))) %>%
   ungroup()
 
-# Format session numbers as "session0", "session1", etc.
+### Format session numbers as "session0", "session1", etc.
 log_data$session <- paste0("session", log_data$session)
 
-# Print the updated log_data with the session column
+### Print the updated log_data with the session column
 print(log_data)
 
-# Write the updated log_data to a CSV file
+### Write the updated log_data to a CSV file
 output_path <- file.path("Geo-portal", "TestCases", "output_with_session.csv")
 write.csv(log_data, output_path, row.names = FALSE)
-
-
-
-
-
-
-
-
-
-
-# Print the updated log_data with the unique identifier
-print(log_data)
-
-
-
-
-
-
-
-
-# Write the updated log_data to a CSV file
-output_path <- file.path("Geo-portal", "TestCases", "output_with_identifier.csv")
-write.csv(log_data, output_path, row.names = FALSE)
-
-#unique_ids <- unique(log_data$unique_id)
-
-# Print the list of unique identifiers
-#print(unique_ids)
-
-#### Identificar Sesiones
-
-# Subset log_data to include referrals different from "-"
-#referrals <- log_data$referer[log_data$referer != "-"]
-
-# Print the referrals
-#print(referrals)
-
 
 
 

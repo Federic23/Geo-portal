@@ -1,0 +1,40 @@
+# Install the necessary packages if not already installed
+install.packages(c("dplyr", "lubridate"))
+
+# Load the required libraries
+library(dplyr)
+library(lubridate)
+
+
+# Read the CSV file
+output_path <- file.path("TestCases", "output_with_session.csv")
+data <- read.csv(output_path)
+
+# Convert datetime column to POSIXct format
+data$datetime <- as.POSIXct(data$datetime, format = "%Y-%m-%d %H:%M:%S")
+
+# Calculate the time difference between consecutive rows
+data$time_diff <- c(0, diff(data$datetime))
+
+# Identify session changes based on IP-Agent tuple and 15-minute threshold
+session_change <- c(TRUE, (data$ip[-1] != data$ip[-length(data$ip)]) | 
+                      (data$useragent[-1] != data$useragent[-length(data$useragent)]) | 
+                      (data$time_diff[-1] > 900))
+
+# Remove missing or incomplete rows
+data <- data[complete.cases(data), ]
+
+# Assign session IDs based on session changes
+data <- data %>%
+  mutate(session_id = cumsum(session_change))
+
+# Calculate the mean time of the session
+mean_session_time <- data %>%
+  group_by(session_id) %>%
+  summarise(mean_time = mean(time_diff))
+
+# Draw a plot of mean session times
+plot(mean_session_time$session_id, mean_session_time$mean_time, type = "l",
+     main = "Mean Session Time", xlab = "Session ID", ylab = "Mean Time (seconds)")
+
+# Additional visualization or analysis can be performed based on your requirements
