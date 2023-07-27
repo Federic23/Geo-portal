@@ -37,4 +37,20 @@ mean_session_time <- data %>%
 plot(mean_session_time$session_id, mean_session_time$mean_time, type = "l",
      main = "Mean Session Time", xlab = "Session ID", ylab = "Mean Time (seconds)")
 
-# Additional visualization or analysis can be performed based on your requirements
+# Calculate the mean time and lines per session
+session_summary <- data %>%
+  group_by(session_id) %>%
+  summarise(mean_time = mean(time_diff),
+            lines_per_session = n())
+
+# Calculate the average lines per session
+average_lines_per_session <- mean(session_summary$lines_per_session)
+
+# Draw a plot of mean session times
+plot(session_summary$session_id, session_summary$mean_time, type = "l",
+     main = "Mean Session Time", xlab = "Session ID", ylab = "Mean Time (seconds)")
+
+# Print the average lines per session
+cat("Average Lines per Session: ", average_lines_per_session, "\n")
+
+#-alterwind log analizer
