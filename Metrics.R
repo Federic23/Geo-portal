@@ -1,6 +1,9 @@
 install.packages(c("ggplot2"))
 library(ggplot2)
 
+install.packages("stringr") #for metrics using strings
+library(stringr)
+
 
 # Read the CSV file
 output_path <- file.path("TestCases", "output_with_session.csv")
@@ -44,3 +47,12 @@ ggplot(average_by_day, aes(x = Day, y = AverageRequests)) +
   ylab("Average Requests") +
   ggtitle("Average Requests per Day of the Week") +
   theme_minimal()
+
+#Metric 6: Search engines
+data$engine <- str_extract(data$user_agent, "(Google|Bing|Yahoo|DuckDuckGo|Firefox)")
+engine_counts <- table(data$engine)
+print(engine_counts)
+
+
+
+
