@@ -23,7 +23,9 @@ library(dplyr)
 
 ## Config File
 
-json_path <- file.path("Geo-portal", "config.json")
+#json_path <- file.path("Geo-portal", "config.json")
+json_path <- file.path("config.json")
+
 json_content <- readLines(json_path, warn = FALSE)
 config <- fromJSON(paste(json_content, collapse = ""))
 
@@ -34,14 +36,14 @@ log_data <- read.apache.access.log(logPath,num_cores=2)
 
 ## Crawlers file
 
-CrawlersPattern_path <- file.path("Geo-portal", "pattern.txt")
+CrawlersPattern_path <- file.path("pattern.txt")
 CrawlersPattern <- readLines(CrawlersPattern_path)
 Crawlerspattern <- paste(CrawlersPattern, collapse = "|")
 log_data <- log_data[!grepl(Crawlerspattern, log_data$useragent, ignore.case = TRUE), ]
 
 # Load data --------------------------------------------------------
 
-input_file <- "/Users/Usuario/Documents/Geo-portal/logsejemplo.txt"
+input_file <- "/Users/paulaareco/Desktop/ORT/tesis/Geo-portal/Logs/access.log.8"
 
 #leo las lineas del archivo
 input_data <- readLines(input_file) 
@@ -81,20 +83,20 @@ for (line in input_data) {
 
 #### imprime log data #####
 
-output_path <- file.path("Geo-portal", "TestCases", "outputPlano.csv") 
+output_path <- file.path("TestCases", "outputPlano.csv") 
 
 write.csv(log_data, output_path, row.names = FALSE)
 
 df5 = read.apache.access.log(logPath, columns=c("ip", "url", "datetime"))
 str(df5)
 
-output_path <- file.path("Geo-portal", "TestCases", "outputPlano.csv") 
+output_path <- file.path( "TestCases", "outputPlano.csv") 
 write.csv(df5, output_path, row.names = FALSE)
 
 ## Filter Crawlers accounts 
 
 ### Write log data to a CSV file
-output_path <- file.path("Geo-portal", "TestCases", "outputPlano.csv")
+output_path <- file.path("TestCases", "outputPlano.csv")
 write.csv(log_data, output_path, row.names = FALSE)
 
 ## Group by IP and order by data
@@ -103,12 +105,12 @@ log_data_ordered <- log_data[order(log_data$ip, log_data$datetime), ]
 
 str(log_data_ordered)
 
-output_path <- file.path("Geo-portal", "TestCases", "ordered_output.csv")
+output_path <- file.path("TestCases", "ordered_output.csv")
 write.csv(log_data_ordered, output_path , row.names = FALSE)
 
 ## Identify Agents
 
-CrawlersPattern_path <- file.path("Geo-portal", "pattern.txt")
+CrawlersPattern_path <- file.path("pattern.txt")
 CrawlersPattern <- readLines(CrawlersPattern_path)
 Crawlerspattern <- paste(CrawlersPattern, collapse = "|")
 log_data <- log_data[!grepl(Crawlerspattern, log_data$useragent, ignore.case = TRUE), ]
@@ -133,7 +135,7 @@ log_data$session <- paste0("session", log_data$session)
 print(log_data)
 
 ### Write the updated log_data to a CSV file
-output_path <- file.path("Geo-portal", "TestCases", "output_with_session.csv")
+output_path <- file.path("TestCases", "output_with_session.csv")
 write.csv(log_data, output_path, row.names = FALSE)
 
 
