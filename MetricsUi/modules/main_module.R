@@ -1,34 +1,35 @@
-# Define the UI for the main module
-mainModuleUI <- function(id) {
-  ns <- NS(id)
-  
-  fluidRow(
-    h3("Numbers Entered:"),
-    verbatimTextOutput(ns("numbersList")),
-    h3("Sum:"),
-    textOutput(ns("sumOutput"))
+# MainModule.R
+library(shiny)
+
+# Load the UI from ui.R
+source("ui.R", local = TRUE)
+
+# Define the main module
+MainModule <- function() {
+  ui <- fluidPage(
+    tags$head(
+      tags$style(HTML(".title-panel {text-align: center;}"))
+    ),
+    div(class = "title-panel",
+        titlePanel("Test 2 UI geoportales")),
+    
+    sidebarLayout(
+      createSidebar(),  # Use the same sidebar function
+      mainPanel(
+        h3("Pesos ingresados:"),
+        verbatimTextOutput("numbersList"),
+        h3("Suma de pesos:"),
+        textOutput("sumOutput")
+      )
+    )
   )
+
+  server <- function(input, output, session) {
+    # ... server logic ...
+  }
+
+  shinyApp(ui = ui, server = server)
 }
 
-# Define the server logic for the main module
-mainModuleServer <- function(input, output, session) {
-  # Create reactive values to store the list of numbers and the sum
-  numbers <- reactiveValues(numbersList = c(), sum = 0)
-  
-  # Add the number when the "Add Number" button is clicked
-  observeEvent(input$addButton, {
-    if (numbers$sum + input$number <= 10) {
-      numbers$numbersList <- c(numbers$numbersList, input$number)
-      numbers$sum <- numbers$sum + input$number
-    }
-  })
-  
-  # Display the list of numbers and the sum
-  output$numbersList <- renderPrint({
-    numbers$numbersList
-  })
-  
-  output$sumOutput <- renderText({
-    paste("Sum: ", numbers$sum)
-  })
-}
+# Run the main module
+MainModule()
