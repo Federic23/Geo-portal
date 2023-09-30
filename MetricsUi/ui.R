@@ -1,26 +1,26 @@
-# Load the Shiny library
+# ui.R
 library(shiny)
+library(shinythemes)
 
-# Define the user interface
-source("modules/main_module.R")
+source("ui_modules/variable_side_bar.R")
 
 ui <- fluidPage(
-  # Application title with CSS styling
+  theme = shinytheme("darkly"),
   tags$head(
     tags$style(HTML(".title-panel {text-align: center;}"))
   ),
   div(class = "title-panel",
-      titlePanel("Goportal - prueba pesos")),
+      titlePanel("Test 2 UI geoportales")),
   
-  # Sidebar layout with input and output definitions
   sidebarLayout(
-    # Sidebar panel
-    sidebarPanel(
-      numericInput("number", "Enter a number (1-9):", value = 0.1, min = 0.1, max = 0.9, step = 1),
-      actionButton("addButton", "Add Number")
-    ),
+    createSidebar(),
     
-    # Main panel
-    mainModuleUI("main_module")
-  )
+    mainPanel(
+      h3("Pesos ingresados:"),
+      verbatimTextOutput("numbersList"),
+      h3("Suma de pesos:"),
+      uiOutput("sumOutput")
+    )
+  ),
+  
 )
