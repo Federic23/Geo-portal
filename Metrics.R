@@ -90,7 +90,33 @@ total_unique_urls <- length(unique(data$url))
 cat("Total of unique pages viewed: ",total_unique_urls)
 
 # Metric: Bounce Rate: The percentage of single-page sessions (users who leave your site after viewing only one page).
-unique_sessions <- length(unique(df$session))
-total_sessions <- nrow(df)
-bounce_rate <- (total_sessions - unique_sessions) / total_sessions * 100
-cat('Bounce Rate:', sprintf('%.2f%%', bounce_rate), '\n')
+bounce_rate <- with(data, sum(table(session) == 1) / length(unique(session)) * 100)
+cat("Bounce Rate:", format(bounce_rate, digits = 2), "%\n")
+
+#Metric: Average Amount of pages visited per user 
+average_pages_per_user <- length(unique(data$url)) / length(unique(data$session))
+print(paste("Average Amount of pages visited per user: ", sprintf("%.2f", average_pages_per_user)))
+
+#Metric: Recurring visitors: amount of visitors that came back
+recurring_visitors <- length(unique(data$ip)) - length(unique(data$session))
+print(paste("Recurring Visitors:", recurring_visitors))
+
+#Metric: Individual Resource Loading Times (average): to help identify elements that slow down page performance.
+average_loading_time <- mean(data$time_diff)
+print(paste("Individual Resource Loading Times (average):", sprintf("%.2f", average_loading_time)))
+
+#Metric 15: average time spent per visitor
+average_time_per_visitor <- mean(data$time_diff, na.rm = TRUE)
+print(paste("Average Time Spent per Visitor:", sprintf("%.2f", average_time_per_visitor), "seconds"))
+
+unique_sessions <- length(unique(data$session))
+average_time_per_visitor <- total_time_on_site / unique_sessions
+print(paste("Average Time Spent per Visitor:", sprintf("%.2f", average_time_per_visitor), "seconds"))
+
+# Metric: Direct Traffic
+direct_traffic <- sum(grepl("^\\s*-$", data$referer, perl = TRUE, ignore.case = TRUE))
+print(paste("Direct Traffic:", direct_traffic, "users"))
+
+# Metric: Average Time Spent per Page
+average_time_per_page <- mean(data$time_diff, na.rm = TRUE)
+print(paste("Average Time Spent per Page:", sprintf("%.2f", average_time_per_page), "seconds"))
