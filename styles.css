@@ -1,0 +1,20 @@
+/* Add a margin to the top of the sidebar */
+.sidebar {
+  margin-top: 20px; /* Adjust the margin size as needed */
+}
+
+/* Center align the title */
+.title-panel {
+  text-align: center;
+}
+
+/* Float the sidebar to the left and content to the right */
+.sidebar {
+  float: left;
+  width: 25%; /* Adjust the sidebar width as needed */
+}
+
+.content {
+  float: right;
+  width: 75%; /* Adjust the content width as needed */
+}
