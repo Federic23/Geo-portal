@@ -1,128 +1,13 @@
 
-source("modules/handle_sum.R")
-
-source("modules/handle_sum.R")
-
-
+source("modules/metric_groups.R")
 library(ggplot2)
 
-#############################################################################################
-group1_metrics <- list(
-  list(name = "Pageviews", id = "trafficMetricA"),
-  list(name = "Unique Visitors", id = "trafficMetricB"),
-  list(name = "Sessions", id = "trafficMetricC"),
-  list(name = "Bounce Rate", id = "trafficMetricD")
-)
-
-group1 <- list(groupName = "Traffic Metrics", metrics = group1_metrics)
-
-group2_metrics <- list(
-  list(name = "Ip únicas", id = "visitorMetricA"),
-  list(name = "Average Amount of pages visited per user", id = "visitorMetricB"),
-  list(name = "Average Amount of pages visited per session", id = "visitorMetricC"),
-  list(name = "Recurring visitors: amount of visitors that came back", id = "visitorMetricD"),
-  list(name = "Individual Resource Loading Times (average)", id = "visitorMetricE"),
-  list(name = "visits per day average", id = "visitorMetricF")
-)
-
-group2 <- list(groupName = "Visitor Statistics", metrics = group2_metrics)
-
-group3_metrics <- list(
-  list(name = "failed requests (amount)", id = "errorMetricA"),
-  list(name = "failed requests (percentage)", id = "errorMetricB"),
-  list(name = "amount of 404 errors", id = "errorMetricC"),
-  list(name = "other errors", id = "errorMetricD")
-)
-
-group3 <- list(groupName = "Error Metrics", metrics = group3_metrics)
-
-metricsGroups <- list(group1, group2, group3)
-
-
-results <- list(
-  list(value = 5.8, date = "15/10/2023"),
-  list(value = 5.9, date = "16/10/2023"),
-  list(value = 5.6, date = "17/10/2023"),
-  list(value = 5.6, date = "18/10/2023"),
-  list(value = 5.9, date = "19/10/2023"),
-  list(value = 6.8, date = "20/10/2023"),
-  list(value = 4.9, date = "21/10/2023"),
-  list(value = 5.5, date = "22/10/2023")
-)
-
-df <- data.frame(
-  value = sapply(results, function(x) x$value),
-  date = as.Date(sapply(results, function(x) as.Date(x$date, format = "%d/%m/%Y"))
-  )
-)
-
-####################################################################################################  
-  
 server <- function(input, output, session) {
-  #######################################################
-  content1_visible <- reactiveVal(TRUE)
-  content2_visible <- reactiveVal(FALSE)
-  
-  observeEvent(input$CsvFormatButton, {
-    content1_visible(TRUE)
-    content2_visible(FALSE)
-  })
-  
-  observeEvent(input$progressionButton, {
-    content1_visible(FALSE)
-    content2_visible(TRUE)
-  })
+  source("modules/route_page_control.R", local = TRUE)
   
   #####################################################
   
-  numbers <- reactiveValues(numbersList = c(), numericValues = numeric(0), sum = 0)
-  
-  observeEvent(input$addButton, {
-    selected_var <- input$var
-    input_number <- input$number
-    
-    # Call the function to handle the logic
-    handleAddButton(selected_var, input_number, numbers)
-  })
-  
-  output$numbersList <- renderPrint({
-    paste(numbers$numbersList, ": ", numbers$numericValues)
-  })
-  
-  output$sumOutput <- renderText({
-    paste("Suma de pesos: ", numbers$sum)
-  })
-  
-  # Define your metric groups and metrics
-  metricgroups <- list(
-    group1 = list(
-      groupName = "Traffic Metrics",
-      metrics = list(
-        list(name = "Metric 1", id = "trafficMetric1"),
-        list(name = "Metric 2", id = "trafficMetric2")
-      )
-    ),
-    group2 = list(
-      groupName = "Visitor Statistics",
-      metrics = list(
-        list(name = "Metric 1", id = "visitorMetric1"),
-        list(name = "Metric 2", id = "visitorMetric2")
-      )
-    ),
-    group3 = list(
-      groupName = "Error Metrics",
-      metrics = list(
-        list(name = "Metric 1", id = "errorMetric1"),
-        list(name = "Metric 2", id = "errorMetric2")
-      )
-    )
-  )
-  
-  # Pass metric groups to the UI
-  output$metricGroups <- renderPrint({
-    metricgroups
-  })
-  
+  ########CSV CHOOSER CONTROLLER
   observe({
     if (!is.null(input$file1)) {
       file_path <- input$file1$datapath
@@ -130,15 +15,17 @@ server <- function(input, output, session) {
     }
   })
   
+  ########CSV CHOOSER CONTROLLER
+  
   filtered_data <- reactive({
     start_date <- input$startDate
     end_date <- input$endDate
     subset(df, date >= start_date & date <= end_date)
   })
   
+  ########DYNAMIC CONTROL
   dynamicContent <- reactive({
-    if (content1_visible()) {
-      # Initial content
+    if (metric_content_visible()) {
       fluidRow(
         lapply(metricsGroups, function(group) {
           div(class = "metric-group-div",
@@ -146,14 +33,36 @@ server <- function(input, output, session) {
               lapply(split(group$metrics, (seq_along(group$metrics) - 1) %/% 2), function(pair) {
                 fluidRow(
                   lapply(pair, function(metric) {
-                    column(6, metric$name, random_number <- round(runif(1), 2))
+                    column(class = "metric-group-divs",6, h6( metric$name, random_number <- round(runif(1), 2)))
                   })
                 )
               })
           )
         })
       )
-    } else if (content2_visible()){
+      
+      # fluidRow(
+      #   lapply(metricsGroups, function(group) {
+      #     div(class = "metric-group-div",
+      #         h4(group$groupName),
+      #         lapply(split(group$metrics, (seq_along(group$metrics) - 1) %/% 2), function(pair) {
+      #           fluidRow(
+      #             lapply(pair, function(metric) {
+      #               column(class = "metric-group-divs", 6,
+      #                      h6(metric$name),
+      #                      numericInput(inputId = paste("input", metric$name, sep="_"), 
+      #                                   label = NULL, 
+      #                                   value = 0, 
+      #                                   min = 0, 
+      #                                   max = 1, 
+      #                                   step = 0.01))
+      #             })
+      #           )
+      #         })
+      #     )
+      #   })
+      # )
+    } else if (overall_metric_content_visible()){
       div(renderPlot({
         p <- ggplot(filtered_data(), aes(x = date, y = value)) +
           geom_line() +
@@ -178,6 +87,51 @@ server <- function(input, output, session) {
 }
 
 
+# Initial content
+# fluidRow(
+#   lapply(metricsGroups, function(group) {
+#     div(class = "metric-group-div",
+#         h4(group$groupName),
+#         lapply(split(group$metrics, (seq_along(group$metrics) - 1) %/% 2), function(pair) {
+#           fluidRow(
+#             lapply(pair, function(metric) {
+#               column(class = "metric-group-divs",6, h6( metric$name, random_number <- round(runif(1), 2)))
+#             })
+#           )
+#         })
+#     )
+#   })
+# )
+
+
+
+
+##########################DEPRECATED#############################
+# numbers <- reactiveValues(numbersList = c(), numericValues = numeric(0), sum = 0)
+# 
+# observeEvent(input$addButton, {
+#   selected_var <- input$var
+#   input_number <- input$number
+#   
+#   # Call the function to handle the logic
+#   handleAddButton(selected_var, input_number, numbers)
+# })
+# 
+# output$numbersList <- renderPrint({
+#   paste(numbers$numbersList, ": ", numbers$numericValues)
+# })
+# 
+# output$sumOutput <- renderText({
+#   paste("Suma de pesos: ", numbers$sum)
+# })
+# 
+# # Pass metric groups to the UI
+# output$metricGroups <- renderPrint({
+#   metricgroups
+# })
+
+
+#######################################################
 
 # server <- function(input, output, session) {
 #   numbers <- reactiveValues(numbersList = c(), numericValues = numeric(0), sum = 0)

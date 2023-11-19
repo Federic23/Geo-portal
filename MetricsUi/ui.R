@@ -7,20 +7,18 @@ source("ui_modules/variable_side_bar.R")
 
 
 ui <- fluidPage(
-  theme = shinytheme("darkly"),
+  theme = shinytheme("paper"),
   includeCSS("styles.css"),
   
   fluidRow(
     column(2, createSidebar()),
     column(10,
            div(class = "title-panel",
-               titlePanel("Test 2 UI geoportales")),
+               # titlePanel("Test 2 UI geoportales"),
+               img(src = "logo.png", height = "250px", width = "auto")),
            
-           mainPanel(
-             uiOutput("dynamicContent"),
-             
-             h3("Weight sum:"),
-             # uiOutput("sumOutput")
+           div(
+             div(class = "metrics-panel", uiOutput("dynamicContent"),),
            )
     )
   )
