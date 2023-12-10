@@ -22,7 +22,7 @@
 }
 
 .sidebar {
-  height: 100vh;
+  height: 130vh;
   margin-top: 20px;
   padding-top: 1rem !important;
   padding: 2rem;
@@ -47,10 +47,38 @@
   width: 100%;
 }
 
+.parent-metric-input{
+  margin-top: 2.6rem;
+}
+
 h4 {
     font-size: 29px;
 }
 
 h6 {
     font-size: 18px;
+}
+
+.parent-metric-input .shiny-numeric-input input[type='number'] {
+  border-radius: 10px;
+}
+
+
+input.form-control{
+  border-radius: 10px;
+  background-color: white;
+}
+
+.metric-button{
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 80);
+  background-color: rgba(73,227,213, 0.7);
+  padding: 2rem;
+  font-size: 29px;
+}
+
+.plot{
+  margin-top: 2rem;
 }
