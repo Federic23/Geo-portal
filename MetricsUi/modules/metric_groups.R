@@ -6,27 +6,27 @@ group1_metrics <- list(
   list(name = "Bounce Rate", id = "trafficMetricD")
 )
 
-group1 <- list(groupName = "Traffic Metrics", metrics = group1_metrics)
+group1 <- list(groupName = "Traffic Metrics", metrics = group1_metrics, value = 3.0)
 
 group2_metrics <- list(
-  list(name = "Ip únicas", id = "visitorMetricA"),
+  list(name = "Unique IPs", id = "visitorMetricA"),
   list(name = "Average Amount of pages visited per user", id = "visitorMetricB"),
   list(name = "Average Amount of pages visited per session", id = "visitorMetricC"),
   list(name = "Recurring visitors: amount of visitors that came back", id = "visitorMetricD"),
-  list(name = "Individual Resource Loading Times (average)", id = "visitorMetricE"),
-  list(name = "visits per day average", id = "visitorMetricF")
+  list(name = "Individual Resource Loading Times (average)", id = "visitorMetricE")
+  # list(name = "visits per day average", id = "visitorMetricF")
 )
 
-group2 <- list(groupName = "Visitor Statistics", metrics = group2_metrics)
+group2 <- list(groupName = "Visitor Statistics", metrics = group2_metrics, value = 3.8)
 
 group3_metrics <- list(
-  list(name = "failed requests (amount)", id = "errorMetricA"),
-  list(name = "failed requests (percentage)", id = "errorMetricB"),
-  list(name = "amount of 404 errors", id = "errorMetricC"),
-  list(name = "other errors", id = "errorMetricD")
+  list(name = "Failed requests (amount)", id = "errorMetricA"),
+  list(name = "Failed requests (percentage)", id = "errorMetricB"),
+  list(name = "Amount of 404 errors", id = "errorMetricC"),
+  list(name = "Other errors", id = "errorMetricD")
 )
 
-group3 <- list(groupName = "Error Metrics", metrics = group3_metrics)
+group3 <- list(groupName = "Error Metrics", metrics = group3_metrics, value = -0.6)
 
 metricsGroups <- list(group1, group2, group3)
 
