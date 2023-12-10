@@ -1,3 +1,4 @@
+####START USER INTERACTION####
 metrics <- c("Metric 1: number of users based on IP field", 
              "Metric 2: visits per day average",
              "Metric 3: failed requests",
@@ -61,3 +62,28 @@ while (TRUE) {
     remaining_weight <- 1
   }
 }
+####END USER INTERACTION####
+
+#metricsResults <- numeric(length(metrics))  # Vector to store metrics results
+metricsResults <- list(
+  "1" = number_of_users,
+  "2" = visit_average,
+  "3" = failed_requests_amount
+)
+
+metricsResults
+
+results <- list() #weight x metricresult
+
+
+for (i in 1:length(metricsResults)) {
+  key <- as.character(i)
+  result <- metricsResults[[key]] * weights[i]
+  results[[key]] <- result
+}
+
+results
+
+#sumar todos
+resultsSum <- sum(unlist(results))
+resultsSum
