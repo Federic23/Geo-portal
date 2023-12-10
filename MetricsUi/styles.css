@@ -1,0 +1,84 @@
+/* Center align the title */
+.title-panel {
+  text-align: center;
+  background-color: rgba(244,255,254,255);
+}
+
+.csv-data-div {
+  background-color: rgba(73,227,213,255);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  padding-bottom: 0.8rem;
+  padding-left: 0.8rem;
+  margin-top: 0.8rem;
+}
+
+.metric-group-div {
+  background-color: rgba(69, 242, 233, 0.2);
+  padding-left: 0.8rem;
+  margin-top: 0.8rem;
+  padding-top: 1rem;
+  padding-bottom: 2rem;
+  border-radius: 10px;
+}
+
+.sidebar {
+  height: 130vh;
+  margin-top: 20px;
+  padding-top: 1rem !important;
+  padding: 2rem;
+  background-color: rgba(31,60,80,255);
+}
+
+.content {
+  float: right; /* Adjust the content width as needed */
+}
+
+.button {
+  width: 100%;
+  border-color: rgba(0, 0, 0, 80);
+  background-color: rgba(73,227,213, 1);
+}
+
+.button-div {
+  margin: 0.1rem;
+}
+
+.metrics-panel{
+  width: 100%;
+}
+
+.parent-metric-input{
+  margin-top: 2.6rem;
+}
+
+h4 {
+    font-size: 29px;
+}
+
+h6 {
+    font-size: 18px;
+}
+
+.parent-metric-input .shiny-numeric-input input[type='number'] {
+  border-radius: 10px;
+}
+
+
+input.form-control{
+  border-radius: 10px;
+  background-color: white;
+}
+
+.metric-button{
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 80);
+  background-color: rgba(73,227,213, 0.7);
+  padding: 2rem;
+  font-size: 29px;
+}
+
+.plot{
+  margin-top: 2rem;
+}
