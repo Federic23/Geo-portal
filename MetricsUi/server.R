@@ -154,15 +154,9 @@ server <- function(input, output, session) {
                 currentData[[group_idx]]$metrics[[idx]]$weight <- input[[metric_input_id]]
               }
             }
-            
-            print("Updated currentData:")
-            print(currentData)
-            
             # Update the reactive variable with the modified data
             reactiveMetricsGroups(currentData)
             
-            # Print the updated data for debugging
-            # print(reactiveMetricsGroups())
             cat(paste("Metric input", metric_input_id, "changed to", input[[metric_input_id]], "\n"))
           }, ignoreInit = TRUE)
         }
