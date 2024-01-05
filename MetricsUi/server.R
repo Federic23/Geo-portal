@@ -1,5 +1,5 @@
 
-source("modules/metric_groups.R")
+source("../WeightAnalysis V2.R")
 library(ggplot2)
 
 server <- function(input, output, session) {
@@ -16,6 +16,13 @@ server <- function(input, output, session) {
     subset(df, date >= start_date & date <= end_date)
   })
   
+  ##################################
+  #########GetValues##############
+  ##################################
+  
+  metricsGroups <- getGroupsAndWeightList()
+  reactiveMetricsGroups <- reactiveVal(getGroupsAndWeightList())
+  
   ################################
   ########DYNAMIC CONTROL VIEW
   ################################
@@ -30,7 +37,7 @@ server <- function(input, output, session) {
       fluidRow(
         lapply(metricsGroups, function(group) {
           div(class = "metric-group-div",
-              h4(group$groupName, group$value),
+              h4(group$name, group$value),
               lapply(split(group$metrics, (seq_along(group$metrics) - 1) %/% 2), function(pair) {
                 fluidRow(
                   lapply(pair, function(metric) {
@@ -78,11 +85,11 @@ server <- function(input, output, session) {
   generateDynamicInputs <- function(metricsGroups) {
     input_list <- lapply(metricsGroups, function(group, group_idx) {
       # Create a unique ID for the group numeric input
-      group_input_id <- paste("group_num_input", gsub("[^A-Za-z0-9]", "", group$groupName), sep="_")
+      group_input_id <- paste( gsub("[^A-Za-z0-9]", "", group$name), sep="_")
       total_metrics <- length(group$metrics)
       div(class = "metric-group-div",
           fluidRow(
-            column(1, h4(group$groupName)),
+            column(1, h4(group$name)),
             column(11, numericInput(inputId = group_input_id, 
                                    label = NULL, 
                                    value = 0.33, 
@@ -98,7 +105,7 @@ server <- function(input, output, session) {
                 column(class = "metric-group-divs", 6,
                        fluidRow(
                          column(3, h6(metric$name)),
-                         column(9, numericInput(inputId = paste("input", gsub("[^A-Za-z0-9]", "", metric$name), sep="_"),
+                         column(9, numericInput(inputId = paste(gsub("[^A-Za-z0-9]", " ", metric$name), sep="_"),
                                                 label = NULL, 
                                                 value = value,  # Value rounded to two decimal places
                                                 min = 0, 
@@ -117,7 +124,7 @@ server <- function(input, output, session) {
   observe({
     lapply(metricsGroups, function(group) {
       # Observer for group numeric input
-      group_num_input_id <- paste("group_num_input", gsub("[^A-Za-z0-9]", "", group$groupName), sep="_")
+      group_num_input_id <- paste(gsub("[^A-Za-z0-9]", "", group$name), sep="_")
       if (group_num_input_id %in% names(input)) {
         observeEvent(input[[group_num_input_id]], {
           # Handle the numeric input for the group
@@ -127,10 +134,35 @@ server <- function(input, output, session) {
       
       # Observers for metric numeric inputs
       lapply(group$metrics, function(metric) {
-        metric_input_id <- paste("input", gsub("[^A-Za-z0-9]", "", metric$name), sep="_")
+        metric_input_id <- paste(gsub("[^A-Za-z0-9]", " ", metric$name), sep="_")
         if (metric_input_id %in% names(input)) {
           observeEvent(input[[metric_input_id]], {
             # Handle the metric input
+            currentData <- reactiveMetricsGroups()
+            
+            # Reconstruct the metric name from metric_input_id by adding spaces
+            metric_name_with_spaces <- gsub("_", " ", metric_input_id)
+            
+            # Directly update the metric in currentData
+            # Assuming currentData is a list of groups, and each group has a list of metrics
+            for (group_idx in seq_along(currentData)) {
+              group <- currentData[[group_idx]]
+              if (metric_name_with_spaces %in% lapply(group$metrics, `[[`, "name")) {
+                idx <- which(lapply(group$metrics, `[[`, "name") == metric_name_with_spaces)
+                
+                # Update the weight of the specific metric directly in currentData
+                currentData[[group_idx]]$metrics[[idx]]$weight <- input[[metric_input_id]]
+              }
+            }
+            
+            print("Updated currentData:")
+            print(currentData)
+            
+            # Update the reactive variable with the modified data
+            reactiveMetricsGroups(currentData)
+            
+            # Print the updated data for debugging
+            # print(reactiveMetricsGroups())
             cat(paste("Metric input", metric_input_id, "changed to", input[[metric_input_id]], "\n"))
           }, ignoreInit = TRUE)
         }
@@ -145,7 +177,7 @@ server <- function(input, output, session) {
   
   observeEvent(input$file1, {
     # Print a message to the console when a file is uploaded
-    print(paste("File", input$file1$name, "has been uploaded."))
+    print(paste("File", input$file1, "has been uploaded."))
     show_csv_data(TRUE)
   })
   
@@ -173,138 +205,8 @@ server <- function(input, output, session) {
 }
 
 
-# Initial content
-# fluidRow(
-#   lapply(metricsGroups, function(group) {
-#     div(class = "metric-group-div",
-#         h4(group$groupName),
-#         lapply(split(group$metrics, (seq_along(group$metrics) - 1) %/% 2), function(pair) {
-#           fluidRow(
-#             lapply(pair, function(metric) {
-#               column(class = "metric-group-divs",6, h6( metric$name, random_number <- round(runif(1), 2)))
-#             })
-#           )
-#         })
-#     )
-#   })
-# )
+# Leer el path porque se complica
 
 
 
 
-##########################DEPRECATED#############################
-# numbers <- reactiveValues(numbersList = c(), numericValues = numeric(0), sum = 0)
-# 
-# observeEvent(input$addButton, {
-#   selected_var <- input$var
-#   input_number <- input$number
-#   
-#   # Call the function to handle the logic
-#   handleAddButton(selected_var, input_number, numbers)
-# })
-# 
-# output$numbersList <- renderPrint({
-#   paste(numbers$numbersList, ": ", numbers$numericValues)
-# })
-# 
-# output$sumOutput <- renderText({
-#   paste("Suma de pesos: ", numbers$sum)
-# })
-# 
-# # Pass metric groups to the UI
-# output$metricGroups <- renderPrint({
-#   metricgroups
-# })
-
-
-#######################################################
-
-# server <- function(input, output, session) {
-#   numbers <- reactiveValues(numbersList = c(), numericValues = numeric(0), sum = 0)
-#   
-#   observeEvent(input$addButton, {
-#     selected_var <- input$var
-#     input_number <- input$number
-#     
-#     # Call the function to handle the logic
-#     handleAddButton(selected_var, input_number, numbers)
-#   })
-#   
-#   output$numbersList <- renderPrint({
-#     paste(numbers$numbersList, ": ", numbers$numericValues)
-#   })
-#   
-#   output$sumOutput <- renderText({
-#     paste("Suma de pesos: ", numbers$sum)
-#   })
-#   
-#   # Define your metric groups and metrics
-#   metric_groups <- list(
-#     group1 = c("Metric A", "Metric B", "Metric C"),
-#     group2 = c("Metric D", "Metric E"),
-#     group3 = c("Metric F")
-#   )
-#   
-#   # Define your metric groups and metrics
-#   metricgroups <- list(
-#     group1 = list(
-#       groupName = "Traffic Metrics",
-#       metrics = list(
-#         list(name = "Metric 1", id = "trafficMetric1"),
-#         list(name = "Metric 2", id = "trafficMetric2")
-#       )
-#     ),
-#     group2 = list(
-#       groupName = "Visitor Statistics",
-#       metrics = list(
-#         list(name = "Metric 1", id = "visitorMetric1"),
-#         list(name = "Metric 2", id = "visitorMetric2")
-#       )
-#     ),
-#     group3 = list(
-#       groupName = "Error Metrics",
-#       metrics = list(
-#         list(name = "Metric 1", id = "errorMetric1"),
-#         list(name = "Metric 2", id = "errorMetric2")
-#       )
-#     )
-#   )
-#   
-#   # Pass metric_groups to the UI
-#   output$metricGroups <- renderPrint({
-#     metricgroups
-#   })
-#   
-#   # Generate input fields for metric groups
-#   output$metricGroupInputs <- renderUI({
-#     metric_group_inputs <- lapply(names(metric_groups), function(group_name) {
-#       metric_group <- metric_groups[[group_name]]
-#       group_inputs <- lapply(metric_group, function(metric_name) {
-#         fluidRow(
-#           column(4, metric_name),
-#           column(8, numericInput(
-#             inputId = paste0(group_name, "_", metric_name, "_weight"),
-#             label = NULL,
-#             min = 0.0, 
-#             max = 1.0,
-#             step = 0.1,
-#             value = 0,
-#             width = "100%"
-#           ))
-#         )
-#       })
-#       tagList(
-#         h3(group_name),
-#         group_inputs
-#       )
-#     })
-#     do.call(tagList, metric_group_inputs)
-#   })
-#   
-#   observe({
-#     if (!is.null(input$file1)) {
-#       file_path <- input$file1$datapath
-#       cat("Uploaded File Path: ", file_path, "\n")
-#     }
-#   })
-# }
