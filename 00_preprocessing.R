@@ -1,4 +1,4 @@
-############ Nueva version
+############ New version
 
 
 # Load Packages --------------------------------------------------------
@@ -23,7 +23,6 @@ library(dplyr)
 
 ## Config File
 
-#json_path <- file.path("Geo-portal", "config.json")
 json_path <- file.path("config.json")
 
 json_content <- readLines(json_path, warn = FALSE)
@@ -45,35 +44,32 @@ log_data <- log_data[!grepl(Crawlerspattern, log_data$useragent, ignore.case = T
 
 input_file <- "/Users/paulaareco/Desktop/ORT/tesis/Geo-portal/Logs/access.log.8"
 
-#leo las lineas del archivo
+#read file lines
 input_data <- readLines(input_file) 
 
-#seria la lista principal, en donde van las ip y las lineas de cada ip
+#main list, contains ips and each ips corresponding line
 ip_logs <- list() 
 
-#regex para encontrar las ip en cada linea (formato ipv4)
+#regex to find lines ip (ipv4 format)
 ip_pattern <- "\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}" 
 
 # Transform log ----------------------------------------------------
 
-#recorro por cada linea
 for (line in input_data) { 
     ip <- regmatches(line, regexpr(ip_pattern, line))
     
-     #si encuentro una ip
+     #if an ip is found
      if (length(ip) > 0) { 
      
-        #es el primer elemento de ip, porque por linea suponemos que va a haber solo una ip, porque regmatches devuelve una lista de vectores
+        #first ips element, it is assumed that for each line there is only one ip as regmatches returns a vectors list
         ip <- ip[[1]] 
          
-        #me fijo si la ip ya esta en la lista, names devuelve las ip con ese nombre que esten en la lista
+        #checks if the ip is already on the list, names returns the ip with the matching name that is in the list
         if (ip %in% names(ip_logs)) { 
-        
-             #en la posicion de la ip, agrego la linea del log
+             # in the ips position, the log line is added
              ip_logs[[ip]] <- c(ip_logs[[ip]], line) 
          } else {
-         
-            #sino creo una lista nueva con la ip que no estaba, y agrego esa linea
+            #if not, a list with the new ip is added, and the line is added to it
             ip_logs[[ip]] <- list(line) 
         }
      }
@@ -81,7 +77,7 @@ for (line in input_data) {
 
 # Proccess data -------------------------------------------------------------
 
-#### imprime log data #####
+#### prints log data #####
 
 output_path <- file.path("TestCases", "outputPlano.csv") 
 
@@ -137,8 +133,3 @@ print(log_data)
 ### Write the updated log_data to a CSV file
 output_path <- file.path("TestCases", "output_with_session.csv")
 write.csv(log_data, output_path, row.names = FALSE)
-
-
-
-
-
