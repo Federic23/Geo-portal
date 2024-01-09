@@ -64,12 +64,12 @@ print(average_by_day)
 
 average_by_day <- data.frame(Day = names(average_by_day), AverageRequests = as.numeric(average_by_day))
 
-ggplot(average_by_day, aes(x = Day, y = AverageRequests)) +
-  geom_bar(stat = "identity", fill = "steelblue") +
-  xlab("Day of the Week") +
-  ylab("Average Requests") +
-  ggtitle("Average Requests per Day of the Week") +
-  theme_minimal()
+#ggplot(average_by_day, aes(x = Day, y = AverageRequests)) +
+#  geom_bar(stat = "identity", fill = "steelblue") +
+#  xlab("Day of the Week") +
+#  ylab("Average Requests") +
+#  ggtitle("Average Requests per Day of the Week") +
+#  theme_minimal()
 
 #Metric 6: Search engines
 search_engines <- c("Google", "Bing", "Yahoo", "DuckDuckGo", "Firefox")
@@ -109,9 +109,10 @@ print(paste("Individual Resource Loading Times (average):", sprintf("%.2f", aver
 average_time_per_visitor <- mean(data$time_diff, na.rm = TRUE)
 print(paste("Average Time Spent per Visitor:", sprintf("%.2f", average_time_per_visitor), "seconds"))
 
+#Metric 15: average time spent per session
 unique_sessions <- length(unique(data$session))
-average_time_per_visitor <- total_time_on_site / unique_sessions
-print(paste("Average Time Spent per Visitor:", sprintf("%.2f", average_time_per_visitor), "seconds"))
+average_time_per_session <- total_time_on_site / unique_sessions
+print(paste("Average Time Spent per Visitor per session:", sprintf("%.2f", average_time_per_session), "seconds"))
 
 # Metric: Direct Traffic
 direct_traffic <- sum(grepl("^\\s*-$", data$referer, perl = TRUE, ignore.case = TRUE))
