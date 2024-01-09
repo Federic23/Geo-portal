@@ -64,13 +64,6 @@ print(average_by_day)
 
 average_by_day <- data.frame(Day = names(average_by_day), AverageRequests = as.numeric(average_by_day))
 
-#ggplot(average_by_day, aes(x = Day, y = AverageRequests)) +
-#  geom_bar(stat = "identity", fill = "steelblue") +
-#  xlab("Day of the Week") +
-#  ylab("Average Requests") +
-#  ggtitle("Average Requests per Day of the Week") +
-#  theme_minimal()
-
 #Metric 6: Search engines
 search_engines <- c("Google", "Bing", "Yahoo", "DuckDuckGo", "Firefox")
 data$engine <- "Other" #initialization
