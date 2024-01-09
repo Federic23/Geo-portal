@@ -75,34 +75,24 @@ calculateMetrics <- function(groups) {
       metricName <- metric$name
       metricWeight <- metric$weight
       
-      cat("Processing metric:", metricName, " with weight:", metricWeight, "\n")
-      
       if (metricName %in% names(resultsPerMetric)) {
         metricResult <- resultsPerMetric[[metricName]]
         metric$result <- metricResult * metricWeight
-        cat("Calculating for", group$name, "-", metricName, ":", metricResult, " * ", metricWeight, "\n")
-        
+       
         totalGroupResult <- totalGroupResult + metric$result
-        cat("After adding metric result to totalGroupResult:", totalGroupResult, "\n")
+        
       }
       
     }
-    
-    cat("Before group$result calculation:", totalGroupResult, "\n")
     group$result <- totalGroupResult * group$weight
-    cat("After group$result calculation:", totalGroupResult, " * ", group$weight, "\n\n")
-    cat("Final group$result:", group$result, "\n\n")
   }
-  
-  #browser()
-  
   return(groups)
 }
 
 
 
 ##################################################################################################
-############################################### PRUEBAS ##########################################
+############################################### TESTS ##########################################
 ##################################################################################################
 
 trafficMetrics <- list(
