@@ -1,5 +1,9 @@
-############ New version
+#Function to set routes 
+setRoute <- function(var_name, route) {
+  assign(var_name, route, envir = .GlobalEnv)
+}
 
+############ New version
 
 # Load Packages --------------------------------------------------------
 
@@ -42,7 +46,7 @@ log_data <- log_data[!grepl(Crawlerspattern, log_data$useragent, ignore.case = T
 
 # Load data --------------------------------------------------------
 
-input_file <- "/Users/paulaareco/Desktop/ORT/tesis/Geo-portal/Logs/access.log.8"
+#input_file <- "/Users/paulaareco/Desktop/ORT/tesis/Geo-portal/Logs/access.log.8" #route is set by using setRoute function
 
 #read file lines
 input_data <- readLines(input_file) 
@@ -79,20 +83,20 @@ for (line in input_data) {
 
 #### prints log data #####
 
-output_path <- file.path("TestCases", "outputPlano.csv") 
+#output_path <- file.path("TestCases", "outputPlano.csv") 
 
 write.csv(log_data, output_path, row.names = FALSE)
 
 df5 = read.apache.access.log(logPath, columns=c("ip", "url", "datetime"))
 str(df5)
 
-output_path <- file.path( "TestCases", "outputPlano.csv") 
+#output_path <- file.path( "TestCases", "outputPlano.csv") 
 write.csv(df5, output_path, row.names = FALSE)
 
 ## Filter Crawlers accounts 
 
 ### Write log data to a CSV file
-output_path <- file.path("TestCases", "outputPlano.csv")
+#output_path <- file.path("TestCases", "outputPlano.csv")
 write.csv(log_data, output_path, row.names = FALSE)
 
 ## Group by IP and order by data
