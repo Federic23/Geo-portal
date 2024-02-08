@@ -19,12 +19,7 @@ metrics2 <- c("Metric 1",
 createSidebar <- function() {
   div(
     class = "sidebar",
-    fileInput("file1", "Choose CSV File",
-              accept = c(
-                "text/csv",
-                "text/comma-separated-values,text/plain",
-                ".csv")
-    ),
+    div(actionButton(class = "button", "select_file", "Select File")),
     div(actionButton(class = "button", "CSVHistoryButton", "Calculate")),
     div(actionButton(class = "button", "progressionButton", "Progression")),
     div(actionButton(class = "button", "progressionButton", "CSV converter")),

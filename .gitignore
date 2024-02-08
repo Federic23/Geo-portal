@@ -5,6 +5,7 @@ config.json
 TestCases/*
 !TestCases/
 .Rproj.user
+desktopApp/
 
 ### R ###
 # History files
