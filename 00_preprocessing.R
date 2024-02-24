@@ -1,6 +1,4 @@
 ############ New version
-
-
 # Load Packages --------------------------------------------------------
 
 if (!require(jsonlite)) {
@@ -19,117 +17,87 @@ library(jsonlite)
 library(ApacheLogProcessor)
 library(dplyr)
 
-# Load Config ------------------------------------------------------
+fileChooserOpen <- reactiveVal(FALSE)
+selectedFilePath <- reactiveVal(NULL)
+dataForMetrics <- reactiveVal(NULL)
 
-## Config File
+printPath <- function() {
+  if (!fileChooserOpen()) {
+    fileChooserOpen(TRUE) # Set the state to open
 
-json_path <- file.path("config.json")
-
-json_content <- readLines(json_path, warn = FALSE)
-config <- fromJSON(paste(json_content, collapse = ""))
-
-logPath <- config$logPath
-crawlersPath <- config$crawlersPath
-
-log_data <- read.apache.access.log(logPath,num_cores=2)
-
-## Crawlers file
-
-CrawlersPattern_path <- file.path("pattern.txt")
-CrawlersPattern <- readLines(CrawlersPattern_path)
-Crawlerspattern <- paste(CrawlersPattern, collapse = "|")
-log_data <- log_data[!grepl(Crawlerspattern, log_data$useragent, ignore.case = TRUE), ]
-
-# Load data --------------------------------------------------------
-
-input_file <- "/Users/paulaareco/Desktop/ORT/tesis/Geo-portal/Logs/access.log.8"
-
-#read file lines
-input_data <- readLines(input_file) 
-
-#main list, contains ips and each ips corresponding line
-ip_logs <- list() 
-
-#regex to find lines ip (ipv4 format)
-ip_pattern <- "\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}" 
-
-# Transform log ----------------------------------------------------
-
-for (line in input_data) { 
-    ip <- regmatches(line, regexpr(ip_pattern, line))
-    
-     #if an ip is found
-     if (length(ip) > 0) { 
-     
-        #first ips element, it is assumed that for each line there is only one ip as regmatches returns a vectors list
-        ip <- ip[[1]] 
-         
-        #checks if the ip is already on the list, names returns the ip with the matching name that is in the list
-        if (ip %in% names(ip_logs)) { 
-             # in the ips position, the log line is added
-             ip_logs[[ip]] <- c(ip_logs[[ip]], line) 
-         } else {
-            #if not, a list with the new ip is added, and the line is added to it
-            ip_logs[[ip]] <- list(line) 
+    tryCatch({
+      path <- file.choose()
+      if (nzchar(path)) { # Check if path ends with .csv
+        print(path)
+        selectedFilePath(path)
+        # appendFilePathToLog(path)
+        df5 <- read_and_print_log(path)
+        df5 <- filter_crawlers(df5)
+        df5 <- order_log_data(df5)
+        df5 <- identify_sessions(df5)
+        dataForMetrics(df5)
+        write_log_to_csv(df5, "identify_sessions.csv")
+      } else {
+        if (nzchar(path)) {
+          print("Selected file is not a CSV.")
+        } else {
+          print("No file selected.")
         }
-     }
+      }
+    }, error = function(e) {
+      cat(paste("File selection was cancelled.\nError message:", e$message))
+    })
+
+    fileChooserOpen(FALSE) # Reset the state to closed
+  }
 }
 
-# Proccess data -------------------------------------------------------------
+read_and_print_log <- function(logPath) {
+  df <- read.apache.access.log(logPath, columns = c("ip", "url", "datetime", "useragent"))
+  str(df)
+  return(df)
+}
 
-#### prints log data #####
+order_log_data <- function(data) {
+  ordered_data <- data[order(data$ip, data$datetime), ]
+  return(ordered_data)
+}
 
-output_path <- file.path("TestCases", "outputPlano.csv") 
+filter_crawlers <- function(data, patternPath = "../pattern.txt") {
+  CrawlersPattern <- readLines(patternPath)
+  Crawlerspattern <- paste(CrawlersPattern, collapse = "|")
+  filtered_data <- data[!grepl(Crawlerspattern, data$useragent, ignore.case = TRUE), ]
+  return(filtered_data)
+}
 
-write.csv(log_data, output_path, row.names = FALSE)
+identify_sessions <- function(data) {
+  data$datetime <- as.POSIXct(data$datetime, format = "%d/%b/%Y:%H:%M:%S", tz = "UTC")
+  
+  data$unique_id <- paste(data$ip, data$useragent, sep = "_")
+  
+  data$session <- 0
+  data$time_diff <- c(0, diff(data$datetime))
+  
+  current_session <- 1
+  data$session[1] <- current_session
+  
+  for (i in 2:nrow(data)) {
+    # Check if unique_id has changed or time_diff is greater than 15 minutes
+    if (data$unique_id[i] != data$unique_id[i-1] || data$time_diff[i] > 900) {
+      current_session <- current_session + 1
+    }
+    data$session[i] <- current_session
+  }
+  
+  data$session <- paste0("session", data$session)
+  
+  return(data)
+}
 
-df5 = read.apache.access.log(logPath, columns=c("ip", "url", "datetime"))
-str(df5)
-
-output_path <- file.path( "TestCases", "outputPlano.csv") 
-write.csv(df5, output_path, row.names = FALSE)
-
-## Filter Crawlers accounts 
-
-### Write log data to a CSV file
-output_path <- file.path("TestCases", "outputPlano.csv")
-write.csv(log_data, output_path, row.names = FALSE)
-
-## Group by IP and order by data
-
-log_data_ordered <- log_data[order(log_data$ip, log_data$datetime), ]
-
-str(log_data_ordered)
-
-output_path <- file.path("TestCases", "ordered_output.csv")
-write.csv(log_data_ordered, output_path , row.names = FALSE)
-
-## Identify Agents
-
-CrawlersPattern_path <- file.path("pattern.txt")
-CrawlersPattern <- readLines(CrawlersPattern_path)
-Crawlerspattern <- paste(CrawlersPattern, collapse = "|")
-log_data <- log_data[!grepl(Crawlerspattern, log_data$useragent, ignore.case = TRUE), ]
-
-
-### Create a new column for unique identifier (IP + agent)
-log_data$unique_id <- paste(log_data$ip, log_data$useragent, sep = "_")
-
-
-### Identify sessions based on time difference
-log_data$datetime <- as.POSIXct(log_data$datetime, format = "%d/%b/%Y:%H:%M:%S", tz = "UTC")
-log_data <- log_data %>%
-  group_by(unique_id) %>%
-  mutate(time_diff = difftime(datetime, lag(datetime, default = first(datetime)), units = "mins"),
-         session = cumsum(ifelse(is.na(time_diff) | time_diff > 15, 1, 0))) %>%
-  ungroup()
-
-### Format session numbers as "session0", "session1", etc.
-log_data$session <- paste0("session", log_data$session)
-
-### Print the updated log_data with the session column
-print(log_data)
-
-### Write the updated log_data to a CSV file
-output_path <- file.path("TestCases", "output_with_session.csv")
-write.csv(log_data, output_path, row.names = FALSE)
+write_log_to_csv <- function(data, filename, directory = "../TestCases") {
+  if (!dir.exists(directory)) {
+    dir.create(directory, recursive = TRUE)
+  }
+  output_path <- file.path(directory, filename)
+  write.csv(data, output_path, row.names = FALSE)
+}
