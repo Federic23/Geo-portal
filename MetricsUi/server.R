@@ -1,5 +1,6 @@
 
 source("../WeightAnalysis V2.R")
+source("modules/metric_groups.R")
 library(ggplot2)
 
 server <- function(input, output, session) {
@@ -20,8 +21,12 @@ server <- function(input, output, session) {
   #########GetValues##############
   ##################################
   
-  metricsGroups <- getGroupsAndWeightList()
-  reactiveMetricsGroups <- reactiveVal(getGroupsAndWeightList())
+  result <- getGroupsAndWeightList()
+  total <- result[[1]]
+  groups <- result[[2]]
+  metricsGroups <- groups
+  reactiveMetricsGroups <- reactiveVal(groups)
+  fileChooserOpen <- reactiveVal(FALSE)
   
   ################################
   ########DYNAMIC CONTROL VIEW
@@ -32,7 +37,7 @@ server <- function(input, output, session) {
       div(
         div(class = "metric-group-div",
             div(h5("Daily Average Total Result :"),
-                h3("6.2")),
+                h3(total)),
         ),
       fluidRow(
         lapply(metricsGroups, function(group) {
@@ -196,6 +201,12 @@ server <- function(input, output, session) {
     }
   })
   
+  observeEvent(input$select_file, {
+    if (!fileChooserOpen()) {
+      
+      printPath()
+    }
+  })
 }
 
 
