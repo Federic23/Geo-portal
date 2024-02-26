@@ -27,8 +27,7 @@ printPath <- function() {
 
     tryCatch({
       path <- file.choose()
-      if (nzchar(path)) { # Check if path ends with .csv
-        print(path)
+      if (nzchar(path)) {
         selectedFilePath(path)
         # appendFilePathToLog(path)
         df5 <- read_and_print_log(path)
@@ -53,7 +52,7 @@ printPath <- function() {
 }
 
 read_and_print_log <- function(logPath) {
-  df <- read.apache.access.log(logPath, columns = c("ip", "url", "datetime", "useragent"))
+  df <- read.apache.access.log(logPath, columns = c("ip", "url", "datetime", "httpcode", "useragent"))
   str(df)
   return(df)
 }

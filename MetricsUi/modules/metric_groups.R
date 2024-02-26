@@ -60,24 +60,23 @@
 #   return(groups)
 # }
 # 
+# # 
+# # 
+# results <- list(
+#   list(value = 5.8, date = "15/10/2023"),
+#   list(value = 5.9, date = "16/10/2023"),
+#   list(value = 5.6, date = "17/10/2023"),
+#   list(value = 5.6, date = "18/10/2023"),
+#   list(value = 5.9, date = "19/10/2023"),
+#   list(value = 6.8, date = "20/10/2023"),
+#   list(value = 4.9, date = "21/10/2023"),
+#   list(value = 5.5, date = "22/10/2023")
+# )
 # 
-# 
-results <- list(
-  list(value = 5.8, date = "15/10/2023"),
-  list(value = 5.9, date = "16/10/2023"),
-  list(value = 5.6, date = "17/10/2023"),
-  list(value = 5.6, date = "18/10/2023"),
-  list(value = 5.9, date = "19/10/2023"),
-  list(value = 6.8, date = "20/10/2023"),
-  list(value = 4.9, date = "21/10/2023"),
-  list(value = 5.5, date = "22/10/2023")
-)
-
-df <- data.frame(
-  value = sapply(results, function(x) x$value),
-  date = as.Date(sapply(results, function(x) as.Date(x$date, format = "%d/%m/%Y"))
-  )
-)
-
+# df <- data.frame(
+#   value = sapply(results, function(x) x$value),
+#   date = as.Date(sapply(results, function(x) as.Date(x$date, format = "%d/%m/%Y"))
+#   )
+# )
 
 

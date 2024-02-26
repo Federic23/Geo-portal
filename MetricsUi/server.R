@@ -1,6 +1,9 @@
 
-source("../WeightAnalysis V2.R")
-source("modules/metric_groups.R")
+source("../03_weight_analysis.R")
+source("../02_metrics.R")
+source("../00_preprocessing.R")
+source("../01_processing.R")
+# source("modules/metric_groups.R")
 library(ggplot2)
 
 server <- function(input, output, session) {
@@ -11,10 +14,14 @@ server <- function(input, output, session) {
   ################################
   ########DATE CHOOSER CONTROLLER
   ################################
+  metricsData <- reactiveValues(daily_metrics = data.frame())
   filtered_data <- reactive({
-    start_date <- input$startDate
-    end_date <- input$endDate
-    subset(df, date >= start_date & date <= end_date)
+    # Assuming df is defined somewhere above, based on daily_metrics_df
+    
+    print("33333333333333333333333333333333333333")
+    print("33333333333333333333333333333333333333")
+    print(metricsData$daily_metrics)
+    metricsData$daily_metrics
   })
   
   ##################################
@@ -33,20 +40,28 @@ server <- function(input, output, session) {
   ################################
   dynamicContent <- reactive({
     if (metric_content_visible()) {
-      Sys.sleep(2)
+      updatedGroupsInfo <- calculateMetrics(reactiveMetricsGroups)
+      calculatedMetrics <- calculateMetricsDaily(reactiveMetricsGroups)
+      metricsData$daily_metrics <- calculatedMetrics
+      print("22222222222222222222222222222222222222222222222222222222")
+      print("22222222222222222222222222222222222222222222222222222222")
+      print(calculatedMetrics)
+      updatedGroups <- updatedGroupsInfo$groups
+      total <- updatedGroupsInfo$total
       div(
         div(class = "metric-group-div",
             div(h5("Daily Average Total Result :"),
                 h3(total)),
         ),
       fluidRow(
-        lapply(metricsGroups, function(group) {
+        lapply(updatedGroups, function(group) {
           div(class = "metric-group-div",
-              h4(group$name, group$value),
+              h4(group$name, group$result),  # Round the group value to 2 decimal places
               lapply(split(group$metrics, (seq_along(group$metrics) - 1) %/% 2), function(pair) {
                 fluidRow(
                   lapply(pair, function(metric) {
-                    column(class = "metric-group-divs",6, h6( metric$name, random_number <- round(runif(1), 2)))
+                    result_display <- if(is.null(metric$result)) { 0 } else { metric$result }
+                    column(class = "metric-group-divs", 6, h6(metric$name, result_display))
                   })
                 )
               })
@@ -88,6 +103,8 @@ server <- function(input, output, session) {
   ################################
   
   generateDynamicInputs <- function(metricsGroups) {
+    total_groups <- length(metricsGroups)
+    group_value <- if (total_groups > 0) round(1 / total_groups, 2) else 0
     input_list <- lapply(metricsGroups, function(group, group_idx) {
       # Create a unique ID for the group numeric input
       group_input_id <- paste( gsub("[^A-Za-z0-9]", "", group$name), sep="_")
@@ -97,7 +114,7 @@ server <- function(input, output, session) {
             column(1, h4(group$name)),
             column(11, numericInput(inputId = group_input_id, 
                                    label = NULL, 
-                                   value = 0.33, 
+                                   value = group$weight, 
                                    min = 0,
                                    max = 1, 
                                    step = 0.01), class = "parent-metric-input",)
@@ -112,7 +129,7 @@ server <- function(input, output, session) {
                          column(3, h6(metric$name)),
                          column(9, numericInput(inputId = paste(gsub("[^A-Za-z0-9]", " ", metric$name), sep="_"),
                                                 label = NULL, 
-                                                value = value,  # Value rounded to two decimal places
+                                                value = metric$weight,  # Value rounded to two decimal places
                                                 min = 0, 
                                                 max = 1, 
                                                 step = 0.01))
@@ -134,6 +151,20 @@ server <- function(input, output, session) {
         observeEvent(input[[group_num_input_id]], {
           # Handle the numeric input for the group
           cat(paste("Group numeric input", group_num_input_id, "changed to", input[[group_num_input_id]], "\n"))
+          
+          currentData <- reactiveMetricsGroups()
+          
+          # Find the corresponding group in currentData
+          for (group_idx in seq_along(currentData)) {
+            if (group$name == currentData[[group_idx]]$name) {
+              # Update the weight/value for the entire group
+              # Assuming you might store a 'weight' or similar property at the group level
+              currentData[[group_idx]]$weight <- input[[group_num_input_id]]
+            }
+          }
+          
+          # Update the reactive variable with the modified data
+          reactiveMetricsGroups(currentData)
         }, ignoreInit = TRUE)
       }
       
@@ -174,7 +205,7 @@ server <- function(input, output, session) {
   
   show_csv_data <- reactiveVal(FALSE)
   
-  observeEvent(input$file1, {
+  observeEvent(input$select_file, {
     # Print a message to the console when a file is uploaded
     print(paste("File", input$file1, "has been uploaded."))
     show_csv_data(TRUE)
