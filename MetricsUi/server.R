@@ -16,11 +16,6 @@ server <- function(input, output, session) {
   ################################
   metricsData <- reactiveValues(daily_metrics = data.frame())
   filtered_data <- reactive({
-    # Assuming df is defined somewhere above, based on daily_metrics_df
-    
-    print("33333333333333333333333333333333333333")
-    print("33333333333333333333333333333333333333")
-    print(metricsData$daily_metrics)
     metricsData$daily_metrics
   })
   
@@ -43,9 +38,6 @@ server <- function(input, output, session) {
       updatedGroupsInfo <- calculateMetrics(reactiveMetricsGroups)
       calculatedMetrics <- calculateMetricsDaily(reactiveMetricsGroups)
       metricsData$daily_metrics <- calculatedMetrics
-      print("22222222222222222222222222222222222222222222222222222222")
-      print("22222222222222222222222222222222222222222222222222222222")
-      print(calculatedMetrics)
       updatedGroups <- updatedGroupsInfo$groups
       total <- updatedGroupsInfo$total
       div(
@@ -157,8 +149,6 @@ server <- function(input, output, session) {
           # Find the corresponding group in currentData
           for (group_idx in seq_along(currentData)) {
             if (group$name == currentData[[group_idx]]$name) {
-              # Update the weight/value for the entire group
-              # Assuming you might store a 'weight' or similar property at the group level
               currentData[[group_idx]]$weight <- input[[group_num_input_id]]
             }
           }
@@ -216,10 +206,10 @@ server <- function(input, output, session) {
     if (show_csv_data()) {  # This will now correctly reference the reactive value
       # Display the CSV data-related UI components
       fluidRow(
-        column(class = "metric-group-divs", 3, h6("Size:", " 118KB")),
-        column(class = "metric-group-divs", 3, h6("Starting Date:", "14/10/23 12:42")),
-        column(class = "metric-group-divs", 3, h6("Finish Date: ", "15/10/23 15:31")),
-        column(class = "metric-group-divs", 3, h6("Row count: ", "84478"))
+        column(class = "metric-group-divs", 3, h6("Size:", " 70146KB")),
+        column(class = "metric-group-divs", 3, h6("Starting Date:", "02/Jun/2013:12:11:40")),
+        column(class = "metric-group-divs", 3, h6("Finish Date: ", "09/Jun/13:06:43:46")),
+        column(class = "metric-group-divs", 3, h6("Row count: ", "207233"))
       )
     } else {
       # Display placeholders or alternative content when CSV data isn't shown

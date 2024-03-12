@@ -82,59 +82,7 @@ appendFilePathToLog <- function(path) {
   close(con)
 }
 
- # calculateMetrics <- function(reactiveMetricsGroups) {
- #   groups <- reactiveMetricsGroups()
- #   data <- dataForMetrics()
- #   
- #   resultsPerMetric <- list(
- #     "Page Views" = calculate_total_pages_viewed(data),
- #     "Unique Page Views" = calculate_total_unique_pages_viewed(data),
- #     "Unique Visitors" = calculate_unique_visitors(data),
- #     "Bounce Rate" = calculate_bounce_rate(data),
- #     "Unique IPs" = calculate_number_of_users(data),
- #     "Average Amount of Pages Visited Per User" = calculate_average_pages_per_user(data),
- #     "Recurring Visitors" = calculate_recurring_visitors(data),
- #     "Individual Resource Loading Times" = calculate_average_loading_time(data),
- #     "Visits Per Day Average" = calculate_visits_a_day_average(data),
- #     "Failed Requests" = calculate_failed_requests(data),
- #     "Amount of 404 Errors" = calculate_404_errors_and_percentage(data),
- #     "Average Time Spent" = calculate_average_time_per_visitor(data),
- #     "Mean Time Per Session" = calculate_average_time_per_session(data),
- #     "Direct Traffic" = calculate_direct_traffic(data),
- #     "Average Time Spent Per Page" = calculate_average_time_per_page(data)
- #   )
- #   
- #   totalGroupsResult <- 0
- #   for (i in seq_along(groups)) {
- #    metrics <- groups[[i]]$metrics
- #    totalGroupResult <- 0
- # 
- #    for (j in seq_along(metrics)) {
- #      metric <- metrics[[j]]
- #      metricName <- metric$name
- #      metricWeight <- metric$weight
- # 
- #      if (metricName %in% names(resultsPerMetric)) {
- #        metricResult <- resultsPerMetric[[metricName]]
- #        calculatedResult <- metricResult * metricWeight
- # 
- #        # Update the metric's result within the group
- #        groups[[i]]$metrics[[j]]$result <- calculatedResult
- #        
- #        totalGroupResult <- totalGroupResult + calculatedResult
- #        
- #      }
- #    }
- #    totalGroupsResult <- totalGroupsResult + totalGroupResult
- #    groups[[i]]$result <- totalGroupResult
- #   }
- #   
- #   total <- totalGroupsResult
- #   
- #   return(list("groups" = groups, "total" = total))
- # }
  daily_metrics_df <- data.frame()
- ola <- "ola"
  calculateMetrics <- function(reactiveMetricsGroups) {
    groups <- reactiveMetricsGroups()
    data <- dataForMetrics()
@@ -202,6 +150,8 @@ appendFilePathToLog <- function(path) {
      day_results <- calculate_group_results(groups, resultsPerMetric)
      # Store the results for the day using 'day_key'
      daily_results[[day_key]] <- day_results$total
+     print(day_key)
+     print(day_results$total)
    }
 
    daily_metrics_df <- data.frame(
@@ -218,6 +168,7 @@ appendFilePathToLog <- function(path) {
    
    for (i in seq_along(groups)) {
      metrics <- groups[[i]]$metrics
+     group_weight <- groups[[i]]$weight
      totalGroupResult <- 0
      
      for (j in seq_along(metrics)) {
@@ -227,7 +178,7 @@ appendFilePathToLog <- function(path) {
        
        if (metricName %in% names(resultsPerMetric)) {
          metricResult <- resultsPerMetric[[metricName]]
-         calculatedResult <- metricResult * metricWeight
+         calculatedResult <- round(metricResult * metricWeight, 1)
          
          # Update the metric's result within the group
          groups[[i]]$metrics[[j]]$result <- calculatedResult
@@ -235,7 +186,7 @@ appendFilePathToLog <- function(path) {
          totalGroupResult <- totalGroupResult + calculatedResult
        }
      }
-     totalGroupsResult <- totalGroupsResult + totalGroupResult
+     totalGroupsResult <- (totalGroupsResult + totalGroupResult) * group_weight
      groups[[i]]$result <- totalGroupResult
    }
    
