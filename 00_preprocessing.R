@@ -159,6 +159,7 @@ order_log_data <- function(data) {
 filter_crawlers <- function(data, patternPath = "../pattern.txt") {
   CrawlersPattern <- readLines(patternPath)
   Crawlerspattern <- paste(CrawlersPattern, collapse = "|")
+  print(Crawlerspattern)
   filtered_data <- data[!grepl(Crawlerspattern, data$useragent, ignore.case = TRUE), ]
   return(filtered_data)
 }

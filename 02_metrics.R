@@ -130,7 +130,7 @@ calculate_average_time_per_session <- function(data) {
 # Function to calculate direct traffic
 calculate_direct_traffic <- function(data) {
   session_starts <- !duplicated(data$session)
-  empty_referer_starts <- data$referer[session_starts] == "" | is.na(data$referer[session_starts])
+  empty_referer_starts <- data$referer[session_starts] == "-" | is.na(data$referer[session_starts])
   
   direct_traffic <- sum(empty_referer_starts)
   

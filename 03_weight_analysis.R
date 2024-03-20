@@ -179,15 +179,15 @@ appendFilePathToLog <- function(path) {
        if (metricName %in% names(resultsPerMetric)) {
          metricResult <- resultsPerMetric[[metricName]]
          calculatedResult <- round(metricResult * metricWeight, 1)
-         
          # Update the metric's result within the group
          groups[[i]]$metrics[[j]]$result <- calculatedResult
          
          totalGroupResult <- totalGroupResult + calculatedResult
        }
      }
-     totalGroupsResult <- (totalGroupsResult + totalGroupResult) * group_weight
-     groups[[i]]$result <- totalGroupResult
+     resultWithWeight <- round(totalGroupResult * group_weight, 1)
+     totalGroupsResult <- (totalGroupsResult + resultWithWeight) 
+     groups[[i]]$result <- resultWithWeight
    }
    
    return(list(groups = groups, total = totalGroupsResult))
