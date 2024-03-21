@@ -128,7 +128,7 @@ appendFilePathToLog <- function(path) {
      # Calculate metrics for the day
      resultsPerMetric <- list(
        "Page Views" = calculate_total_pages_viewed(day_data),
-       "Unique Page Views" = calculate_total_unique_pages_viewed(day_data),
+       "Uniue Page Views" = calculate_total_unique_pages_viewed(day_data),
        "Unique Visitors" = calculate_unique_visitors(day_data),
        "Bounce Rate" = calculate_bounce_rate(day_data),
        "Unique IPs" = calculate_number_of_users(day_data),
@@ -192,95 +192,3 @@ appendFilePathToLog <- function(path) {
    
    return(list(groups = groups, total = totalGroupsResult))
  }
- 
- # calculate_group_results <- function(groups, resultsPerMetric) {
- #   totalGroupsResult <- 0
- #   
- #   for (i in seq_along(groups)) {
- #     metrics <- groups[[i]]$metrics
- #     totalGroupResult <- 0
- #     
- #     for (j in seq_along(metrics)) {
- #       metric <- metrics[[j]]
- #       metricName <- metric$name
- #       metricWeight <- metric$weight
- #       
- #       if (metricName %in% names(resultsPerMetric)) {
- #         metricResult <- resultsPerMetric[[metricName]]
- #         calculatedResult <- metricResult * metricWeight
- #         
- #         # Update the metric's result within the group
- #         groups[[i]]$metrics[[j]]$result <- calculatedResult
- #         
- #         totalGroupResult <- totalGroupResult + calculatedResult
- #       }
- #     }
- #     totalGroupsResult <- totalGroupsResult + totalGroupResult
- #     groups[[i]]$result <- totalGroupResult
- #   }
- #   
- #   return(list(groups = groups, total = totalGroupsResult))
- # }
-
-
-
-# ##################################################################################################
-# ############################################### TESTS ##########################################
-# ##################################################################################################
-
-# trafficMetrics <- list(
-#   list(name="Page Views", weight = 0.25, result=NULL),
-#   list(name="Unique Page Views", weight = 0.25, result=NULL),
-#   list(name="Unique Visitors", weight = 0.25, result=NULL),
-#   list(name="Bounce Rate", weight = 0.25, result=NULL)
-# )
-
-# visitorStatisticsMetrics <- list(
-#   list(name="Unique IPs", weight = 0.25, result=NULL),
-#   list(name="Average Amount of Pages Visited Per User", weight = 0.25, result=NULL),
-#   list(name="Recurring Visitors", weight = 0.20, result=NULL),
-#   list(name="Individual Resource Loading Times", weight = 0.15, result=NULL),
-#   list(name="Visits Per Day Average", weight = 0.15, result=NULL)
-# )
-
-# errorMetrics <- list(
-#   list(name="Failed Requests", weight = 0.8, result=NULL),
-#   list(name="Amount of 404 Errors", weight = 0.2, result=NULL)
-# )
-
-# activityMetrics <- list(
-#   list(name="Average Time Spent", weight = 0.1, result=NULL),
-#   list(name="Mean Time Per Session", weight = 0.9, result=NULL)
-# )
-
-# trafficSourcesMetrics <- list(
-#   list(name="Direct Traffic", weight = 1, result=NULL)
-# )
-
-# userBehaviorMetrics <- list(
-#   list(name="Average Time Spent Per Page", weight = 1, result=NULL)
-# )
-
-# groupsExample <- list(
-#   list(name = "Traffic Metrics" , metrics = trafficMetrics, weight = 0.2, result=NULL),
-#   list(name = "Visitor Statistics" , metrics = visitorStatisticsMetrics, weight = 0.1, result=NULL),
-#   list(name = "Error Metrics" , metrics = errorMetrics, Weight = 0.3, result=NULL),
-#   list(name = "Activity Metrics" , metrics = activityMetrics, weight = 0.1, result=NULL),
-#   list(name = "Traffic Sources" , metrics = trafficSourcesMetrics, weight = 0.2, result=NULL),
-#   list(name = "Average Time Spent Per Page" , metrics = userBehaviorMetrics, weight = 0.1, result=NULL)
-# )
-
-# resultGroups <- calculateMetrics(groupsExample)
-
-# print(resultGroups)
-
-# # results
-# for (group in resultGroups) {
-#   cat("Group:", group$name, "Weight:", group$weight, "Result:", ifelse(is.null(group$result), "NULL", group$result), "\n")
-  
-#   for (metric in group$metrics) {
-#     cat("  Metric:", metric$name, "Metric Result:", ifelse(is.null(metric$result), "NULL", metric$result), "\n")
-#   }
-  
-#   cat("\n")
-# }

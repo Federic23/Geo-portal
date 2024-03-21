@@ -3,7 +3,6 @@ source("../03_weight_analysis.R")
 source("../02_metrics.R")
 source("../00_preprocessing.R")
 source("../01_processing.R")
-# source("modules/metric_groups.R")
 library(ggplot2)
 
 server <- function(input, output, session) {
@@ -42,13 +41,13 @@ server <- function(input, output, session) {
       total <- updatedGroupsInfo$total
       div(
         div(class = "metric-group-div",
-            div(h5("Daily Average Total Result :"),
+            div(h5("Total Result :"),
                 h3(total)),
         ),
       fluidRow(
         lapply(updatedGroups, function(group) {
           div(class = "metric-group-div",
-              h4(group$name, group$result),  # Round the group value to 2 decimal places
+              h4(group$name, group$result), 
               lapply(split(group$metrics, (seq_along(group$metrics) - 1) %/% 2), function(pair) {
                 fluidRow(
                   lapply(pair, function(metric) {
@@ -63,7 +62,7 @@ server <- function(input, output, session) {
     } else if (overall_metric_content_visible()){
       div(class = "plot", renderPlot({
         p <- ggplot(filtered_data(), aes(x = date, y = value)) +
-          geom_line(linewidth = 1.5) +  # Use 'linewidth' for a thicker line
+          geom_line(linewidth = 1.5) + 
           labs(
             title = "Overall rating per day",
             x = "Date",
@@ -115,13 +114,13 @@ server <- function(input, output, session) {
           lapply(split(group$metrics, (seq_along(group$metrics) - 1) %/% 2), function(pair) {
             fluidRow(
               lapply(pair, function(metric) {
-                value <- if (total_metrics > 0) round(1 / total_metrics, 2) else 0 # Round to two decimal places
+                value <- if (total_metrics > 0) round(1 / total_metrics, 2) else 0 
                 column(class = "metric-group-divs", 6,
                        fluidRow(
                          column(3, h6(metric$name)),
                          column(9, numericInput(inputId = paste(gsub("[^A-Za-z0-9]", " ", metric$name), sep="_"),
                                                 label = NULL, 
-                                                value = metric$weight,  # Value rounded to two decimal places
+                                                value = metric$weight, 
                                                 min = 0, 
                                                 max = 1, 
                                                 step = 0.01))
@@ -169,8 +168,6 @@ server <- function(input, output, session) {
             # Reconstruct the metric name from metric_input_id by adding spaces
             metric_name_with_spaces <- gsub("_", " ", metric_input_id)
             
-            # Directly update the metric in currentData
-            # Assuming currentData is a list of groups, and each group has a list of metrics
             for (group_idx in seq_along(currentData)) {
               group <- currentData[[group_idx]]
               if (metric_name_with_spaces %in% lapply(group$metrics, `[[`, "name")) {
@@ -203,7 +200,7 @@ server <- function(input, output, session) {
   
   # Render the conditional UI for the CSV data display
   output$csvDataDisplay <- renderUI({
-    if (show_csv_data()) {  # This will now correctly reference the reactive value
+    if (show_csv_data()) { 
       # Display the CSV data-related UI components
       fluidRow(
         column(class = "metric-group-divs", 3, h6("Size:", " 70146KB")),
@@ -229,10 +226,6 @@ server <- function(input, output, session) {
     }
   })
 }
-
-
-# Leer el path porque se complica
-
 
 
 

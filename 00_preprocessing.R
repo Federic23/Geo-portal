@@ -23,7 +23,7 @@ dataForMetrics <- reactiveVal(NULL)
 
 printPath <- function() {
   if (!fileChooserOpen()) {
-    fileChooserOpen(TRUE) # Set the state to open
+    fileChooserOpen(TRUE)
 
     tryCatch({
       path <- file.choose()
@@ -31,18 +31,12 @@ printPath <- function() {
         selectedFilePath(path)
         
         # appendFilePathToLog(path)
-        print("0")
         df5 <- read_and_print_log(path)
-        print("1")
-        # df5 <- filter_crawlers(df5)
-        # print("2")
-        # df5 <- order_log_data(df5)
-        # print("3")
-        # df5 <- identify_sessions(df5)
-        # print("4")
-        # dataForMetrics(df5)
-        # print("5")
-        # write_log_to_csv(df5, "identify_sessions.csv")
+        df5 <- filter_crawlers(df5)
+        df5 <- order_log_data(df5)
+        df5 <- identify_sessions(df5)
+        dataForMetrics(df5)
+        write_log_to_csv(df5, "identify_sessions.csv")
       } else {
         if (nzchar(path)) {
           print("Selected file is not a CSV.")
@@ -102,8 +96,6 @@ fix_log_format <- function(logPath) {
     # Reversing the string to handle the last double quote uniquely
     line_rev <- stringi::stri_reverse(line)
     
-    # Replace the first occurrence of double quotes in the reversed line (which corresponds to the last in the original)
-    # Then reverse it back before final write, ensuring we only do this if there's at least one pair of double quotes
     if (grepl('""', line_rev)) {
       line_rev <- sub('""', '##TEMP##', line_rev, fixed = TRUE) # Temporarily mark the last double quote
       line_rev <- gsub('""', '"', line_rev, fixed = TRUE) # Replace all other double quotes with single quotes
@@ -175,7 +167,7 @@ identify_sessions <- function(data) {
   
   current_session <- 1
   data$session[1] <- current_session
-  data$time_diff[1] <- 0 # Assuming the first entry of the dataset does not have a predecessor
+  data$time_diff[1] <- 0 
   
   for (i in 2:nrow(data)) {
     # Calculate time difference only within the same unique_id
