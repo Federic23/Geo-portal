@@ -1,6 +1,8 @@
 
-source("../WeightAnalysis V2.R")
-source("modules/metric_groups.R")
+source("../03_weight_analysis.R")
+source("../02_metrics.R")
+source("../00_preprocessing.R")
+source("../01_processing.R")
 library(ggplot2)
 
 server <- function(input, output, session) {
@@ -11,10 +13,9 @@ server <- function(input, output, session) {
   ################################
   ########DATE CHOOSER CONTROLLER
   ################################
+  metricsData <- reactiveValues(daily_metrics = data.frame())
   filtered_data <- reactive({
-    start_date <- input$startDate
-    end_date <- input$endDate
-    subset(df, date >= start_date & date <= end_date)
+    metricsData$daily_metrics
   })
   
   ##################################
@@ -33,20 +34,25 @@ server <- function(input, output, session) {
   ################################
   dynamicContent <- reactive({
     if (metric_content_visible()) {
-      Sys.sleep(2)
+      updatedGroupsInfo <- calculateMetrics(reactiveMetricsGroups)
+      calculatedMetrics <- calculateMetricsDaily(reactiveMetricsGroups)
+      metricsData$daily_metrics <- calculatedMetrics
+      updatedGroups <- updatedGroupsInfo$groups
+      total <- updatedGroupsInfo$total
       div(
         div(class = "metric-group-div",
-            div(h5("Daily Average Total Result :"),
+            div(h5("Total Result :"),
                 h3(total)),
         ),
       fluidRow(
-        lapply(metricsGroups, function(group) {
+        lapply(updatedGroups, function(group) {
           div(class = "metric-group-div",
-              h4(group$name, group$value),
+              h4(group$name, group$result), 
               lapply(split(group$metrics, (seq_along(group$metrics) - 1) %/% 2), function(pair) {
                 fluidRow(
                   lapply(pair, function(metric) {
-                    column(class = "metric-group-divs",6, h6( metric$name, random_number <- round(runif(1), 2)))
+                    result_display <- if(is.null(metric$result)) { 0 } else { metric$result }
+                    column(class = "metric-group-divs", 6, h6(metric$name, result_display))
                   })
                 )
               })
@@ -56,7 +62,7 @@ server <- function(input, output, session) {
     } else if (overall_metric_content_visible()){
       div(class = "plot", renderPlot({
         p <- ggplot(filtered_data(), aes(x = date, y = value)) +
-          geom_line(linewidth = 1.5) +  # Use 'linewidth' for a thicker line
+          geom_line(linewidth = 1.5) + 
           labs(
             title = "Overall rating per day",
             x = "Date",
@@ -88,6 +94,8 @@ server <- function(input, output, session) {
   ################################
   
   generateDynamicInputs <- function(metricsGroups) {
+    total_groups <- length(metricsGroups)
+    group_value <- if (total_groups > 0) round(1 / total_groups, 2) else 0
     input_list <- lapply(metricsGroups, function(group, group_idx) {
       # Create a unique ID for the group numeric input
       group_input_id <- paste( gsub("[^A-Za-z0-9]", "", group$name), sep="_")
@@ -97,7 +105,7 @@ server <- function(input, output, session) {
             column(1, h4(group$name)),
             column(11, numericInput(inputId = group_input_id, 
                                    label = NULL, 
-                                   value = 0.33, 
+                                   value = group$weight, 
                                    min = 0,
                                    max = 1, 
                                    step = 0.01), class = "parent-metric-input",)
@@ -106,13 +114,13 @@ server <- function(input, output, session) {
           lapply(split(group$metrics, (seq_along(group$metrics) - 1) %/% 2), function(pair) {
             fluidRow(
               lapply(pair, function(metric) {
-                value <- if (total_metrics > 0) round(1 / total_metrics, 2) else 0 # Round to two decimal places
+                value <- if (total_metrics > 0) round(1 / total_metrics, 2) else 0 
                 column(class = "metric-group-divs", 6,
                        fluidRow(
                          column(3, h6(metric$name)),
                          column(9, numericInput(inputId = paste(gsub("[^A-Za-z0-9]", " ", metric$name), sep="_"),
                                                 label = NULL, 
-                                                value = value,  # Value rounded to two decimal places
+                                                value = metric$weight, 
                                                 min = 0, 
                                                 max = 1, 
                                                 step = 0.01))
@@ -134,6 +142,18 @@ server <- function(input, output, session) {
         observeEvent(input[[group_num_input_id]], {
           # Handle the numeric input for the group
           cat(paste("Group numeric input", group_num_input_id, "changed to", input[[group_num_input_id]], "\n"))
+          
+          currentData <- reactiveMetricsGroups()
+          
+          # Find the corresponding group in currentData
+          for (group_idx in seq_along(currentData)) {
+            if (group$name == currentData[[group_idx]]$name) {
+              currentData[[group_idx]]$weight <- input[[group_num_input_id]]
+            }
+          }
+          
+          # Update the reactive variable with the modified data
+          reactiveMetricsGroups(currentData)
         }, ignoreInit = TRUE)
       }
       
@@ -148,8 +168,6 @@ server <- function(input, output, session) {
             # Reconstruct the metric name from metric_input_id by adding spaces
             metric_name_with_spaces <- gsub("_", " ", metric_input_id)
             
-            # Directly update the metric in currentData
-            # Assuming currentData is a list of groups, and each group has a list of metrics
             for (group_idx in seq_along(currentData)) {
               group <- currentData[[group_idx]]
               if (metric_name_with_spaces %in% lapply(group$metrics, `[[`, "name")) {
@@ -174,7 +192,7 @@ server <- function(input, output, session) {
   
   show_csv_data <- reactiveVal(FALSE)
   
-  observeEvent(input$file1, {
+  observeEvent(input$select_file, {
     # Print a message to the console when a file is uploaded
     print(paste("File", input$file1, "has been uploaded."))
     show_csv_data(TRUE)
@@ -182,13 +200,13 @@ server <- function(input, output, session) {
   
   # Render the conditional UI for the CSV data display
   output$csvDataDisplay <- renderUI({
-    if (show_csv_data()) {  # This will now correctly reference the reactive value
+    if (show_csv_data()) { 
       # Display the CSV data-related UI components
       fluidRow(
-        column(class = "metric-group-divs", 3, h6("Size:", " 118KB")),
-        column(class = "metric-group-divs", 3, h6("Starting Date:", "14/10/23 12:42")),
-        column(class = "metric-group-divs", 3, h6("Finish Date: ", "15/10/23 15:31")),
-        column(class = "metric-group-divs", 3, h6("Row count: ", "84478"))
+        column(class = "metric-group-divs", 3, h6("Size:", " 70146KB")),
+        column(class = "metric-group-divs", 3, h6("Starting Date:", "02/Jun/2013:12:11:40")),
+        column(class = "metric-group-divs", 3, h6("Finish Date: ", "09/Jun/13:06:43:46")),
+        column(class = "metric-group-divs", 3, h6("Row count: ", "207233"))
       )
     } else {
       # Display placeholders or alternative content when CSV data isn't shown
@@ -208,10 +226,6 @@ server <- function(input, output, session) {
     }
   })
 }
-
-
-# Leer el path porque se complica
-
 
 
 

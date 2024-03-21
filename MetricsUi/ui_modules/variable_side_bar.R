@@ -22,8 +22,8 @@ createSidebar <- function() {
     div(actionButton(class = "button", "select_file", "Select File")),
     div(actionButton(class = "button", "CSVHistoryButton", "Calculate")),
     div(actionButton(class = "button", "progressionButton", "Progression")),
-    div(actionButton(class = "button", "progressionButton", "CSV converter")),
-    div(actionButton(class = "button", "CSVHistoryButton", "CSV History")),
+    # div(actionButton(class = "button", "progressionButton", "CSV converter")),
+    # div(actionButton(class = "button", "CSVHistoryButton", "CSV History")),
   )
 }
 
