@@ -80,8 +80,10 @@ server <- function(input, output, session) {
       dateInput("endDate", "Select an end date:", value = "2023-10-22"))
       
     } else if (weight_content_visible()){
-      div(generateDynamicInputs(metricsGroups),
-          actionButton(class = "metric-button", "CsvFormatButton", "Generate Metrics"))
+      div(
+        actionButton(class = "metric-button", "CsvFormatButton", "Generate Metrics"),
+        generateDynamicInputs(metricsGroups)
+         )
     }
   })
   
