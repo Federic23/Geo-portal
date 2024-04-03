@@ -2,8 +2,10 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=r
 
 config.json
-TestCases
+TestCases/*
+!TestCases/
 .Rproj.user
+desktopApp/
 
 ### R ###
 # History files
