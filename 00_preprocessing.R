@@ -21,6 +21,8 @@ fileChooserOpen <- reactiveVal(FALSE)
 selectedFilePath <- reactiveVal(NULL)
 dataForMetrics <- reactiveVal(NULL)
 
+fileDetails <- reactiveVal(list(size = "-", startDate = "24", finishDate = "-", rowCount = "-"))
+
 printPath <- function() {
   if (!fileChooserOpen()) {
     fileChooserOpen(TRUE)
@@ -47,8 +49,8 @@ printPath <- function() {
     }, error = function(e) {
       cat(paste("File selection was cancelled.\nError message:", e$message))
     })
-
-    fileChooserOpen(FALSE) # Reset the state to closed
+    
+    fileChooserOpen(FALSE)
   }
 }
 
@@ -126,20 +128,38 @@ read_sort_and_write_logs <- function(logPath) {
   datetimeStrings <- regmatches(logEntries, gregexpr("\\[\\d{2}/\\w+/\\d{4}:\\d{2}:\\d{2}:\\d{2} -\\d{4}\\]", logEntries))
   
   # Convert the datetime strings to POSIXct objects
+  Sys.setlocale("LC_TIME", "en_US.UTF-8")
   datetimes <- as.POSIXct(strptime(datetimeStrings, format = "[%d/%b/%Y:%H:%M:%S %z]"))
+  
+  firstDate <- min(datetimes)
+  lastDate <- max(datetimes)
+  
+  
+  
+  print("firstDate------------------------")
+  print(firstDate)
+  print(lastDate)
   
   # Order the logEntries by datetime
   orderedLogs <- logEntries[order(datetimes)]
   
   # Trim the log to the first 200,000 lines if it exceeds that number
   print("enter_cut_length")
-  if(length(orderedLogs) > 200000) {
-    orderedLogs <- orderedLogs[1:200000]
+  if(length(orderedLogs) > 450000) {
+    orderedLogs <- orderedLogs[1:450000]
   }
+  
+  details <- list(firstDate = firstDate, lastDate = lastDate, fileSize = file.info(logPath)$size, rowCount = length(orderedLogs))
+  fileDetails(details)
+  print("fileDetails------------------------")
+  print(fileDetails);
+  print("------------------------fileDetails")
   
   # Write the ordered logs back to the original file
   print("writing_read_sort_and_write_logs")
   writeLines(orderedLogs, logPath)
+  
+  
 }
 
 
