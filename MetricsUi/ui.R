@@ -1,3 +1,23 @@
+if (!require(shiny)) {
+  install.packages("shiny")
+}
+
+if (!require(shinythemes)) {
+  install.packages("shinythemes")
+}
+
+if (!require(ggplot2)) {
+  install.packages("ggplot2")
+}
+
+if (!require(shinyjs)) {
+  install.packages("shinyjs")
+}
+
+if (!require(shinycssloaders)) {
+  install.packages("shinycssloaders")
+}
+
 library(shiny)
 library(shinythemes)
 library(ggplot2)

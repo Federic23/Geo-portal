@@ -6,6 +6,7 @@ TestCases/*
 !TestCases/
 .Rproj.user
 desktopApp/
+DA/
 
 ### R ###
 # History files
