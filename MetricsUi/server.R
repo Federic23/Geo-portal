@@ -201,7 +201,6 @@ server <- function(input, output, session) {
   show_csv_data <- reactiveVal(FALSE)
   
   observeEvent(input$select_file, {
-    # Print a message to the console when a file is uploaded
     print(paste("File", input$file1, "has been uploaded."))
     show_csv_data(TRUE)
   })
