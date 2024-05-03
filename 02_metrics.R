@@ -3,6 +3,20 @@ if (!require("ggplot2")) {
   install.packages("ggplot2")
   library(ggplot2)
 }
+
+if (!require(stringr)) {
+  install.packages("stringr")
+}
+
+if (!require(lubridate)) {
+  install.packages("lubridate")
+}
+
+
+if (!require(dplyr)) {
+  install.packages("dplyr")
+}
+
 library(ggplot2)
 
 library(stringr)

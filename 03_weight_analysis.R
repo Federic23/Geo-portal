@@ -121,7 +121,6 @@ appendFilePathToLog <- function(path) {
    daily_results <- list()
 
    for (i in seq_along(unique_days)){
-     # Subset data for the current day
      day <- unique_days[i]  # Get the date for the current index
      day_data <- subset(data, date == day)
 
@@ -150,8 +149,6 @@ appendFilePathToLog <- function(path) {
      day_results <- calculate_group_results(groups, resultsPerMetric)
      # Store the results for the day using 'day_key'
      daily_results[[day_key]] <- day_results$total
-     print(day_key)
-     print(day_results$total)
    }
 
    daily_metrics_df <- data.frame(

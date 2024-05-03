@@ -21,6 +21,8 @@ fileChooserOpen <- reactiveVal(FALSE)
 selectedFilePath <- reactiveVal(NULL)
 dataForMetrics <- reactiveVal(NULL)
 
+fileDetails <- reactiveVal(list(size = "-", startDate = "24", finishDate = "-", rowCount = "-"))
+
 printPath <- function() {
   if (!fileChooserOpen()) {
     fileChooserOpen(TRUE)
@@ -30,7 +32,6 @@ printPath <- function() {
       if (nzchar(path)) {
         selectedFilePath(path)
         
-        # appendFilePathToLog(path)
         df5 <- read_and_print_log(path)
         df5 <- filter_crawlers(df5)
         df5 <- order_log_data(df5)
@@ -47,8 +48,8 @@ printPath <- function() {
     }, error = function(e) {
       cat(paste("File selection was cancelled.\nError message:", e$message))
     })
-
-    fileChooserOpen(FALSE) # Reset the state to closed
+    
+    fileChooserOpen(FALSE)
   }
 }
 
@@ -60,16 +61,12 @@ transform_log_to_df <- function(logPath) {
 
 read_and_print_log <- function(logPath) {
   result <- tryCatch({
-    print("try")
     read_sort_and_write_logs(logPath)
     df <- transform_log_to_df(logPath)
     return(df)
   }, error = function(e) {
-    print("catch")
     fix_log_format(logPath)
-    print("fix_log_format_out")
     read_sort_and_write_logs(logPath)
-    print("read_sort_and_write_logs_out")
     df <- transform_log_to_df(logPath)
     return(df)
   })
@@ -119,27 +116,33 @@ fix_log_format <- function(logPath) {
 read_sort_and_write_logs <- function(logPath) {
   # Read the entire log file into a vector, each line as an element
   
-  print("enter_read_sort_and_write_logs")
   logEntries <- readLines(logPath)
   
   # Extract datetime strings from the log entries
   datetimeStrings <- regmatches(logEntries, gregexpr("\\[\\d{2}/\\w+/\\d{4}:\\d{2}:\\d{2}:\\d{2} -\\d{4}\\]", logEntries))
   
   # Convert the datetime strings to POSIXct objects
+  Sys.setlocale("LC_TIME", "en_US.UTF-8")
   datetimes <- as.POSIXct(strptime(datetimeStrings, format = "[%d/%b/%Y:%H:%M:%S %z]"))
+  
+  firstDate <- min(datetimes)
+  lastDate <- max(datetimes)
   
   # Order the logEntries by datetime
   orderedLogs <- logEntries[order(datetimes)]
   
-  # Trim the log to the first 200,000 lines if it exceeds that number
   print("enter_cut_length")
-  if(length(orderedLogs) > 200000) {
-    orderedLogs <- orderedLogs[1:200000]
+  if(length(orderedLogs) > 450000) {
+    orderedLogs <- orderedLogs[1:450000]
   }
   
-  # Write the ordered logs back to the original file
-  print("writing_read_sort_and_write_logs")
+  details <- list(firstDate = firstDate, lastDate = lastDate, fileSize = file.info(logPath)$size, rowCount = length(orderedLogs))
+  fileDetails(details)
+  print(fileDetails);
+  
   writeLines(orderedLogs, logPath)
+  
+  
 }
 
 
@@ -162,7 +165,6 @@ identify_sessions <- function(data) {
   data$unique_id <- paste(data$ip, data$useragent, sep = "_")
   
   data$session <- 0
-  # Initialize time_diff with NA or zeros; NA might be more indicative of "not applicable"
   data$time_diff <- rep(NA, nrow(data))
   
   current_session <- 1

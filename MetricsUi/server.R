@@ -14,10 +14,14 @@ server <- function(input, output, session) {
   ########DATE CHOOSER CONTROLLER
   ################################
   metricsData <- reactiveValues(daily_metrics = data.frame())
-  filtered_data <- reactive({
-    metricsData$daily_metrics
-  })
   
+  filtered_data <- reactive({
+    req(input$startDate, input$endDate)  # Ensure that both dates are selected
+    start_date <- as.Date(input$startDate)
+    end_date <- as.Date(input$endDate)
+    # Assuming 'date' is a column in your metricsData that contains date information
+    dplyr::filter(metricsData$daily_metrics, date >= start_date & date <= end_date)
+  })
   ##################################
   #########GetValues##############
   ##################################
@@ -33,6 +37,7 @@ server <- function(input, output, session) {
   ########DYNAMIC CONTROL VIEW
   ################################
   dynamicContent <- reactive({
+    details <- fileDetails() 
     if (metric_content_visible()) {
       updatedGroupsInfo <- calculateMetrics(reactiveMetricsGroups)
       calculatedMetrics <- calculateMetricsDaily(reactiveMetricsGroups)
@@ -76,12 +81,15 @@ server <- function(input, output, session) {
           )
         p
       }),
-      div(dateInput("startDate", "Select a start date:", value = "2023-10-15")),
-      dateInput("endDate", "Select an end date:", value = "2023-10-22"))
+      # Progression Date Selector
+      div(dateInput("startDate", "Select a start date:", value = details$firstDate, max = details$lastDate, min = details$firstDate)),
+      dateInput("endDate", "Select an end date:", value = details$lastDate,  min = details$firstDate, max = details$lastDate))
       
     } else if (weight_content_visible()){
-      div(generateDynamicInputs(metricsGroups),
-          actionButton(class = "metric-button", "CsvFormatButton", "Generate Metrics"))
+      div(
+        actionButton(class = "metric-button", "CsvFormatButton", "Generate Metrics"),
+        generateDynamicInputs(metricsGroups)
+         )
     }
   })
   
@@ -193,29 +201,29 @@ server <- function(input, output, session) {
   show_csv_data <- reactiveVal(FALSE)
   
   observeEvent(input$select_file, {
-    # Print a message to the console when a file is uploaded
     print(paste("File", input$file1, "has been uploaded."))
     show_csv_data(TRUE)
   })
   
-  # Render the conditional UI for the CSV data display
+  
   output$csvDataDisplay <- renderUI({
     if (show_csv_data()) { 
-      # Display the CSV data-related UI components
+      details <- fileDetails() 
       fluidRow(
-        column(class = "metric-group-divs", 3, h6("Size:", " 70146KB")),
-        column(class = "metric-group-divs", 3, h6("Starting Date:", "02/Jun/2013:12:11:40")),
-        column(class = "metric-group-divs", 3, h6("Finish Date: ", "09/Jun/13:06:43:46")),
-        column(class = "metric-group-divs", 3, h6("Row count: ", "207233"))
+        column(class = "metric-group-divs", 3, h6("Size:", details$fileSize, " Bytes")),
+        column(class = "metric-group-divs", 3, h6("Starting Date:", details$firstDate)),
+        column(class = "metric-group-divs", 3, h6("Finish Date: ", details$lastDate)),
+        column(class = "metric-group-divs", 3, h6("Row count: ", details$rowCount))
       )
     } else {
-      # Display placeholders or alternative content when CSV data isn't shown
       fluidRow(
         column(class = "metric-group-divs", 3, h6("Size: ", " -")),
         column(class = "metric-group-divs", 3, h6("Starting Date: ", " -")),
         column(class = "metric-group-divs", 3, h6("Finish Date: ", " -")),
         column(class = "metric-group-divs", 3, h6("Row count: ", " -"))
       )
+      
+      
     }
   })
   
